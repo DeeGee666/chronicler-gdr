@@ -736,6 +736,70 @@ body {
 .vis-btn.active.private { background: color-mix(in srgb,var(--private) 25%,transparent); color: var(--private); }
 .vis-btn.active.shared  { background: color-mix(in srgb,var(--shared)  25%,transparent); color: var(--shared);  }
 
+/* ═══ AREA NOTIFICHE ════════════════════════════════════════════════════════ */
+#notifications-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 340px;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-hi);
+  z-index: 800;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  box-shadow: -8px 0 30px rgba(0,0,0,0.4);
+}
+#notifications-panel.open { transform: translateX(0); }
+.notif-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.notif-header-title {
+  font-family: var(--font-display);
+  font-size: 1rem; font-weight: 600; color: var(--text-pri); flex: 1;
+}
+.notif-list {
+  flex: 1; overflow-y: auto;
+  padding: 0.75rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.notif-item {
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-left: 3px solid transparent;
+  font-size: 0.85rem;
+  position: relative;
+}
+.notif-item.unread { border-left-color: var(--accent); }
+.notif-item.shared  { border-left-color: var(--shared); background: color-mix(in srgb,var(--shared) 6%,var(--bg-surface)); }
+.notif-item.danger  { border-left-color: var(--danger); background: color-mix(in srgb,var(--danger) 6%,var(--bg-surface)); }
+.notif-item.info    { border-left-color: var(--info); }
+.notif-item.warn    { border-left-color: var(--warn); }
+.notif-title { font-weight: 600; color: var(--text-pri); margin-bottom: 0.2rem; }
+.notif-body  { color: var(--text-sec); line-height: 1.4; }
+.notif-meta  { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); margin-top: 0.35rem; }
+.notif-del   { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.75rem; padding: 2px 5px; }
+.notif-del:hover { color: var(--danger); }
+.notif-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px;
+  background: var(--danger); color: #fff;
+  border-radius: 9px; font-size: 0.65rem; font-weight: 700;
+  font-family: var(--font-mono); padding: 0 4px;
+}
+#notif-bell {
+  position: relative; cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text-sec);
+  transition: all var(--transition); font-size: 1rem;
+  display: flex; align-items: center; gap: 0.35rem;
+}
+#notif-bell:hover { border-color: var(--accent); color: var(--accent); }
+#notif-bell .notif-badge { font-size: 0.6rem; min-width: 16px; height: 16px; }
+
 /* ═══ NOTIFICA TOAST ════════════════════════════════════════════════════════ */
 #toast-container {
   position: fixed; bottom: 1.5rem; right: 1.5rem;
@@ -940,6 +1004,9 @@ service cloud.firestore {
       <div>
         <div class="topbar-title" id="topbar-title">Dashboard</div>
       </div>
+      <button id="notif-bell" onclick="toggleNotifications()" title="Notifiche">
+        🔔 <span class="notif-badge" id="notif-count" style="display:none;">0</span>
+      </button>
       <div class="topbar-subtitle" id="topbar-time">—</div>
     </div>
 
@@ -1637,9 +1704,17 @@ service cloud.firestore {
       <div class="form-group"><label class="form-label">PF Max</label><input class="form-input" id="pl-hp" type="number" placeholder="20" min="1"></div>
     </div>
     <div class="form-group"><label class="form-label">Background & Note</label><textarea class="form-textarea" id="pl-bg" placeholder="Background del personaggio, motivazioni, segreti..."></textarea></div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-player')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-player')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-player" value="private">
+    </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('player-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('players','player-modal',{realName:'pl-real',charName:'pl-char',race:'pl-race',playerClass:'pl-class',level:'pl-level',hp:'pl-hp',background:'pl-bg',visibility:'private'})">Salva giocatore</button>
+      <button class="btn btn-primary" onclick="saveRecord('players','player-modal',{realName:'pl-real',charName:'pl-char',race:'pl-race',playerClass:'pl-class',level:'pl-level',hp:'pl-hp',background:'pl-bg',visibility:'vis-player'})">Salva giocatore</button>
     </div>
   </div>
 </div>
@@ -1668,6 +1743,35 @@ service cloud.firestore {
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('init-modal')">Annulla</button>
       <button class="btn btn-primary" onclick="addToInitiative()">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PANNELLO NOTIFICHE ═══════════════════════════════════════════════════ -->
+<div id="notifications-panel">
+  <div class="notif-header">
+    <span>🔔</span>
+    <div class="notif-header-title">Notifiche</div>
+    <button class="btn btn-secondary btn-sm" onclick="clearAllNotifications()">Segna tutte lette</button>
+    <button class="btn btn-secondary btn-icon btn-sm" onclick="toggleNotifications()">✕</button>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div class="empty-state"><div class="empty-icon">🔔</div><p>Nessuna notifica.</p></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL MODIFICA GENERICA ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <span id="edit-modal-icon">✏️</span>
+      <div class="modal-title" id="edit-modal-title">Modifica</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('edit-modal')">✕</button>
+    </div>
+    <div id="edit-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('edit-modal')">Annulla</button>
+      <button class="btn btn-primary" id="edit-modal-save" onclick="saveEdit()">Salva modifiche</button>
     </div>
   </div>
 </div>
@@ -2123,15 +2227,16 @@ function renderAlerts(alerts) {
       </div>
     </div>`).join('');
 
-  // Banner per alert recenti di altri DM (< 30 sec)
-  const veryRecent = others.filter(a => {
+  // Salva nelle notifiche persistenti gli alert nuovi (< 30 sec) di altri DM
+  others.forEach(a => {
     const ts = a.createdAt?.seconds;
-    return ts && (Date.now()/1000 - ts) < 30;
+    const isRecent = ts && (Date.now()/1000 - ts) < 30;
+    if (isRecent && !shownBanners.has('alert-' + a.id)) {
+      shownBanners.add('alert-' + a.id);
+      addNotification(`📡 Alert da ${esc(a.dmName)}`, a.text, a.type || 'info', formatDate(a.createdAt));
+      showBanner(a.text, a.type || 'info', `DM: ${a.dmName}`);
+    }
   });
-  if (veryRecent.length) {
-    const a = veryRecent[0];
-    showBanner(a.text, a.type || 'info', `DM: ${a.dmName}`);
-  }
 }
 
 // ─── BANNER ALERTS ────────────────────────────────────────────────────
@@ -2146,6 +2251,10 @@ function showAlertBanners(events) {
 }
 
 function showBanner(text, type, meta) {
+  // Salva nella lista notifiche persistente
+  addNotification(meta, text, type, '');
+
+  // Mostra anche il banner temporaneo in cima
   const container = document.getElementById('global-alerts');
   const div = document.createElement('div');
   div.className = `alert-banner ${type}`;
@@ -2172,20 +2281,25 @@ function mergeAndRender(key, docs, source, renderFn) {
 
 function cardHtml(item, fields, titleField='title', bodyField='desc') {
   const vis = item._source === 'shared' ? 'shared' : 'private';
+  const isMine = item.uid === currentUser?.uid;
+  const collName = item._collection || '';
   return `
     <div class="card">
-      <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
+        ${item.type ? `<div class="card-tag public">${esc(item.type)}</div>` : ''}
+        ${item.category ? `<div class="card-tag event">${esc(item.category)}</div>` : ''}
+      </div>
       <div class="card-title">${esc(item[titleField] || item.name || '—')}</div>
-      <div class="card-body">${esc(item[bodyField] || item.synopsis || item.content || item.desc || '').substring(0,200)}${(item[bodyField] || '').length > 200 ? '…' : ''}</div>
+      <div class="card-body" style="white-space:pre-wrap;">${esc((item[bodyField] || item.synopsis || item.content || item.desc || '').substring(0,300))}${((item[bodyField]||item.synopsis||item.content||item.desc||'').length > 300) ? '…' : ''}</div>
       <div class="card-meta">
         <span>✍ ${esc(item.createdBy || '—')}</span>
-        ${item.type ? `<span>${esc(item.type)}</span>` : ''}
-        ${item.category ? `<span>${esc(item.category)}</span>` : ''}
         ${fields.map(f => item[f] ? `<span>${esc(item[f])}</span>` : '').join('')}
       </div>
-      <div class="card-actions">
-        ${item.uid === currentUser?.uid ? `<button class="btn btn-danger btn-sm" onclick="deleteRecord('${item._collection}','${item.id}','${item._source}')">🗑 Elimina</button>` : ''}
-      </div>
+      ${isMine ? `<div class="card-actions">
+        <button class="btn btn-secondary btn-sm" onclick='openEditModal(${JSON.stringify(item)})'>✏️ Modifica</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${collName}','${item.id}','${item._source}')">🗑 Elimina</button>
+      </div>` : ''}
     </div>`;
 }
 
@@ -2222,20 +2336,24 @@ function renderItems(docs, source) {
     if (!el) return;
     el.innerHTML = all.length ? all.map(item => {
       const vis = item._source;
+      const isMine = item.uid === currentUser?.uid;
       return `
         <div class="card">
-          <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
-          ${item.isUnique ? '<div class="card-tag danger-tag" style="margin-left:0.3rem;">⚠ Unico</div>' : ''}
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+            <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
+            ${item.isUnique ? '<div class="card-tag danger-tag">⚠ Unico</div>' : ''}
+            <div class="card-tag event">${esc(item.rarity||'')}</div>
+          </div>
           <div class="card-title">${esc(item.name || '—')}</div>
-          <div class="card-body">${esc((item.desc||'').substring(0,180))}</div>
+          <div class="card-body" style="white-space:pre-wrap;">${esc((item.desc||'').substring(0,280))}</div>
           <div class="card-meta">
-            <span>✨ ${esc(item.rarity || '')}</span>
-            ${item.owner ? `<span>👤 ${esc(item.owner)}</span>` : ''}
+            ${item.owner ? `<span>👤 Trovato da: ${esc(item.owner)}</span>` : ''}
             <span>✍ ${esc(item.createdBy || '')}</span>
           </div>
-          <div class="card-actions">
-            ${item.uid === currentUser?.uid ? `<button class="btn btn-danger btn-sm" onclick="deleteRecord('items','${item.id}','${item._source}')">🗑</button>` : ''}
-          </div>
+          ${isMine ? `<div class="card-actions">
+            <button class="btn btn-secondary btn-sm" onclick='openEditModal(${JSON.stringify(item)})'>✏️ Modifica</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRecord('items','${item.id}','${item._source}')">🗑 Elimina</button>
+          </div>` : ''}
         </div>`;
     }).join('') : '<div class="empty-state"><div class="empty-icon">💎</div><p>Nessun oggetto.</p></div>';
     document.getElementById('stat-items').textContent = all.length;
@@ -2251,16 +2369,24 @@ function renderPlayers(docs, source) {
   mergeAndRender('players', docs, source, all => {
     const el = document.getElementById('players-list');
     if (!el) return;
-    el.innerHTML = all.length ? all.map(p => `
-      <div class="card">
-        <div class="card-title">👤 ${esc(p.charName||'—')} <span class="text-muted" style="font-size:0.8rem;">(${esc(p.realName||'')})</span></div>
-        <div class="card-body">${esc(p.race||'')} · ${esc(p.playerClass||'')} · Lv.${esc(p.level||'?')}</div>
-        <div class="card-meta"><span>❤ PF Max: ${esc(p.hp||'?')}</span></div>
-        ${p.background ? `<div class="card-body" style="margin-top:0.5rem;font-size:0.82rem;">${esc(p.background.substring(0,200))}</div>` : ''}
-        <div class="card-actions">
-          ${p.uid === currentUser?.uid ? `<button class="btn btn-danger btn-sm" onclick="deleteRecord('players','${p.id}','${p._source}')">🗑</button>` : ''}
-        </div>
-      </div>`).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Nessun giocatore.</p></div>';
+    el.innerHTML = all.length ? all.map(p => {
+      const vis = p._source || 'private';
+      const isMine = p.uid === currentUser?.uid;
+      return `
+        <div class="card">
+          <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;">
+            <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
+          </div>
+          <div class="card-title">👤 ${esc(p.charName||'—')} <span class="text-muted" style="font-size:0.8rem;">(${esc(p.realName||'')})</span></div>
+          <div class="card-body">${esc(p.race||'')} · ${esc(p.playerClass||'')} · Lv.${esc(p.level||'?')}</div>
+          <div class="card-meta"><span>❤ PF Max: ${esc(p.hp||'?')}</span><span>✍ ${esc(p.createdBy||'')}</span></div>
+          ${p.background ? `<div class="card-body" style="margin-top:0.5rem;font-size:0.82rem;white-space:pre-wrap;">${esc(p.background.substring(0,300))}</div>` : ''}
+          ${isMine ? `<div class="card-actions">
+            <button class="btn btn-secondary btn-sm" onclick='openEditModal(${JSON.stringify(p)})'>✏️ Modifica</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRecord('players','${p.id}','${p._source}')">🗑 Elimina</button>
+          </div>` : ''}
+        </div>`;
+    }).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Nessun giocatore.</p></div>';
   });
 }
 function renderMusic(docs, source) {
@@ -2286,22 +2412,40 @@ function renderMaps(docs, source) {
   mergeAndRender('maps', docs, source, all => {
     const el = document.getElementById('maps-list');
     if (!el) return;
-    el.innerHTML = all.length ? all.map(m => `
-      <div class="map-thumb" onclick="openUrl('${esc(m.url)}')">
-        ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🗺️</span>'}
-        <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
-      </div>`).join('') : '<div class="empty-state"><div class="empty-icon">🗺️</div><p>Nessuna mappa.</p></div>';
+    el.innerHTML = all.length ? all.map(m => {
+      const isMine = m.uid === currentUser?.uid;
+      return `
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div class="map-thumb" onclick="openUrl('${esc(m.url)}')">
+            ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🗺️</span>'}
+            <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
+          </div>
+          ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.4rem 0;">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${JSON.stringify(m)})'>✏️ Rinomina</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRecord('maps','${m.id}','${m._source}')">🗑</button>
+          </div>` : ''}
+        </div>`;
+    }).join('') : '<div class="empty-state"><div class="empty-icon">🗺️</div><p>Nessuna mappa.</p></div>';
   });
 }
 function renderImages(docs, source) {
   mergeAndRender('images', docs, source, all => {
     const el = document.getElementById('images-list');
     if (!el) return;
-    el.innerHTML = all.length ? all.map(m => `
-      <div class="map-thumb" onclick="openUrl('${esc(m.url)}')">
-        ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🖼️</span>'}
-        <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
-      </div>`).join('') : '<div class="empty-state"><div class="empty-icon">🖼️</div><p>Nessuna immagine.</p></div>';
+    el.innerHTML = all.length ? all.map(m => {
+      const isMine = m.uid === currentUser?.uid;
+      return `
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div class="map-thumb" onclick="openUrl('${esc(m.url)}')">
+            ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🖼️</span>'}
+            <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
+          </div>
+          ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.4rem 0;">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${JSON.stringify(m)})'>✏️ Rinomina</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRecord('images','${m.id}','${m._source}')">🗑</button>
+          </div>` : ''}
+        </div>`;
+    }).join('') : '<div class="empty-state"><div class="empty-icon">🖼️</div><p>Nessuna immagine.</p></div>';
   });
 }
 
@@ -2430,7 +2574,260 @@ function clearModalFields(modalId) {
   modal.querySelectorAll('input[type=hidden]').forEach(h => { if(h.id.startsWith('vis-')) h.value='private'; });
 }
 
-// ─── TOAST ────────────────────────────────────────────────────────────
+// ─── SISTEMA NOTIFICHE PERSISTENTI ────────────────────────────────────
+let notifications = [];
+let unreadCount = 0;
+
+function addNotification(title, body, type='info', meta='') {
+  const n = { id: Date.now() + Math.random(), title, body, type, meta,
+               time: new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),
+               unread: true };
+  notifications.unshift(n);
+  if (notifications.length > 50) notifications.pop(); // max 50
+  unreadCount++;
+  renderNotifications();
+  updateNotifBadge();
+}
+
+function renderNotifications() {
+  const el = document.getElementById('notif-list');
+  if (!el) return;
+  if (!notifications.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div><p>Nessuna notifica.</p></div>';
+    return;
+  }
+  el.innerHTML = notifications.map(n => `
+    <div class="notif-item ${n.type} ${n.unread ? 'unread' : ''}">
+      <button class="notif-del" onclick="removeNotification('${n.id}')">✕</button>
+      <div class="notif-title">${esc(n.title)}</div>
+      <div class="notif-body">${esc(n.body)}</div>
+      <div class="notif-meta">${n.meta ? esc(n.meta) + ' · ' : ''}${n.time}</div>
+    </div>`).join('');
+}
+
+window.removeNotification = (id) => {
+  notifications = notifications.filter(n => String(n.id) !== String(id));
+  renderNotifications();
+};
+
+window.clearAllNotifications = () => {
+  notifications.forEach(n => n.unread = false);
+  unreadCount = 0;
+  updateNotifBadge();
+  renderNotifications();
+};
+
+function updateNotifBadge() {
+  const badge = document.getElementById('notif-count');
+  if (!badge) return;
+  if (unreadCount > 0) {
+    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+  // aggiorna anche badge sidebar
+  const sideB = document.getElementById('badge-session');
+  if (sideB && unreadCount > 0) sideB.style.display = 'inline';
+}
+
+window.toggleNotifications = () => {
+  const panel = document.getElementById('notifications-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    // segna come lette quando apri
+    notifications.forEach(n => n.unread = false);
+    unreadCount = 0;
+    updateNotifBadge();
+    renderNotifications();
+  }
+};
+
+// ─── MODAL MODIFICA GENERICA ───────────────────────────────────────────
+let _editItem = null;
+
+window.openEditModal = (item) => {
+  _editItem = item;
+  const coll = item._collection || '';
+  const icons = { plots:'📜', lore:'📖', npcs:'🧙', items:'💎', races:'🐉',
+                  rules:'⚖️', sessions:'⚡', players:'👤', maps:'🗺️', images:'🖼️',
+                  music:'🎵' };
+  document.getElementById('edit-modal-icon').textContent = icons[coll] || '✏️';
+  document.getElementById('edit-modal-title').textContent = 'Modifica ' + (item.title || item.name || item.charName || '');
+
+  // Genera i campi dinamicamente in base alla collezione
+  const body = document.getElementById('edit-modal-body');
+  body.innerHTML = buildEditFields(item, coll);
+  openModal('edit-modal');
+};
+
+function buildEditFields(item, coll) {
+  const vis = item._source || 'private';
+  const visSwitch = `
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn ${vis==='private'?'active private':''}" data-vis="private" onclick="pickVis(this,'edit-vis')">🔒 Privata</button>
+        <button class="vis-btn ${vis==='shared'?'active shared':''}" data-vis="shared" onclick="pickVis(this,'edit-vis')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="edit-vis" value="${vis}">
+    </div>`;
+
+  const schemas = {
+    plots: `
+      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select class="form-select" id="ef-type">
+          ${['main','side','secret','shared'].map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      <div class="form-group"><label class="form-label">Sinossi</label><textarea class="form-textarea" id="ef-synopsis">${esc(item.synopsis||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Note interne</label><textarea class="form-textarea" id="ef-notes">${esc(item.notes||'')}</textarea></div>
+      ${visSwitch}`,
+    lore: `
+      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
+      <div class="form-group"><label class="form-label">Categoria</label>
+        <select class="form-select" id="ef-category">
+          ${['history','place','religion','politics','other'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      <div class="form-group"><label class="form-label">Contenuto</label><textarea class="form-textarea" id="ef-content" style="min-height:120px;">${esc(item.content||'')}</textarea></div>
+      ${visSwitch}`,
+    npcs: `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
+        <div class="form-group"><label class="form-label">Ruolo</label>
+          <select class="form-select" id="ef-role">
+            ${['ally','enemy','neutral','faction'].map(t=>`<option value="${t}" ${item.role===t?'selected':''}>${t}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="ef-race" value="${esc(item.race||'')}"></div>
+        <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="ef-npcClass" value="${esc(item.npcClass||'')}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc">${esc(item.desc||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Statistiche</label><input class="form-input" id="ef-stats" value="${esc(item.stats||'')}"></div>
+      ${visSwitch}`,
+    items: `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
+        <div class="form-group"><label class="form-label">Rarità</label>
+          <select class="form-select" id="ef-rarity">
+            ${['common','uncommon','rare','legendary','unique'].map(t=>`<option value="${t}" ${item.rarity===t?'selected':''}>${t}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc">${esc(item.desc||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Trovato da</label><input class="form-input" id="ef-owner" value="${esc(item.owner||'')}"></div>
+      ${visSwitch}`,
+    races: `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-select" id="ef-type">
+            ${['race','class','subrace'].map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc">${esc(item.desc||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Abilità</label><textarea class="form-textarea" id="ef-abilities">${esc(item.abilities||'')}</textarea></div>
+      ${visSwitch}`,
+    rules: `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
+        <div class="form-group"><label class="form-label">Categoria</label>
+          <select class="form-select" id="ef-category">
+            ${['combat','magic','skills','general'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc" style="min-height:120px;">${esc(item.desc||'')}</textarea></div>
+      ${visSwitch}`,
+    sessions: `
+      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
+      <div class="form-group"><label class="form-label">Data</label><input class="form-input" type="date" id="ef-date" value="${esc(item.date||'')}"></div>
+      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="ef-notes">${esc(item.notes||'')}</textarea></div>
+      ${visSwitch}`,
+    players: `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome reale</label><input class="form-input" id="ef-realName" value="${esc(item.realName||'')}"></div>
+        <div class="form-group"><label class="form-label">Nome personaggio</label><input class="form-input" id="ef-charName" value="${esc(item.charName||'')}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="ef-race" value="${esc(item.race||'')}"></div>
+        <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="ef-playerClass" value="${esc(item.playerClass||'')}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Livello</label><input class="form-input" type="number" id="ef-level" value="${esc(item.level||'')}"></div>
+        <div class="form-group"><label class="form-label">PF Max</label><input class="form-input" type="number" id="ef-hp" value="${esc(item.hp||'')}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Background</label><textarea class="form-textarea" id="ef-background">${esc(item.background||'')}</textarea></div>
+      ${visSwitch}`,
+    music: `
+      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
+      <div class="form-group"><label class="form-label">URL</label><input class="form-input" type="url" id="ef-url" value="${esc(item.url||'')}"></div>
+      <div class="form-group"><label class="form-label">Durata</label><input class="form-input" id="ef-duration" value="${esc(item.duration||'')}"></div>
+      <div class="form-group"><label class="form-label">Umore</label>
+        <select class="form-select" id="ef-mood">
+          ${['combat','explore','tension','ambient'].map(t=>`<option value="${t}" ${item.mood===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      ${visSwitch}`,
+    maps: `
+      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
+      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="ef-notes">${esc(item.notes||'')}</textarea></div>
+      ${visSwitch}`,
+    images: `
+      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
+      <div class="form-group"><label class="form-label">Categoria</label>
+        <select class="form-select" id="ef-category">
+          ${['character','place','item','creature','other'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      ${visSwitch}`,
+  };
+  return schemas[coll] || `<p class="text-muted">Modifica non disponibile per questa sezione.</p>`;
+}
+
+window.saveEdit = async () => {
+  if (!_editItem || !currentUser) return;
+  const item = _editItem;
+  const coll = item._collection || '';
+  const oldVis = item._source || 'private';
+  const newVis = document.getElementById('edit-vis')?.value || oldVis;
+
+  // Raccoglie tutti i campi ef-*
+  const updates = {};
+  document.querySelectorAll('[id^="ef-"]').forEach(el => {
+    const key = el.id.replace('ef-','');
+    updates[key] = el.value;
+  });
+  updates.visibility = newVis;
+  updates.updatedAt = serverTimestamp();
+  updates.updatedBy = dmName;
+
+  try {
+    // Se la visibilità è cambiata: elimina e ricrea nell'altra collezione
+    if (oldVis !== newVis) {
+      const oldRef = doc(db, ...(oldVis === 'shared'
+        ? ['shared', coll, 'docs', item.id]
+        : ['private', currentUser.uid, coll, item.id]));
+      await deleteDoc(oldRef);
+      await addDoc(getCollRef(coll, newVis), {
+        ...item, ...updates,
+        createdAt: item.createdAt || serverTimestamp(),
+        createdBy: item.createdBy || dmName,
+        uid: currentUser.uid,
+        _source: undefined, _collection: undefined
+      });
+    } else {
+      const docRef = doc(db, ...(oldVis === 'shared'
+        ? ['shared', coll, 'docs', item.id]
+        : ['private', currentUser.uid, coll, item.id]));
+      const { _source, _collection, id, ...cleanItem } = item;
+      await setDoc(docRef, { ...cleanItem, ...updates }, { merge: true });
+    }
+    closeModal('edit-modal');
+    _editItem = null;
+    toast('Modifiche salvate ✓', 'success');
+  } catch(e) { toast('Errore salvataggio: ' + e.message, 'error'); }
+};
+
+// ─── OVERRIDE showBanner per salvare anche in notifiche ───────────────
+
 window.toast = (msg, type='info') => {
   const container = document.getElementById('toast-container');
   const div = document.createElement('div');
@@ -2464,6 +2861,11 @@ document.getElementById('i-rarity')?.addEventListener('change', function() {
 window.deleteRecord = deleteRecord;
 window.deleteWorldEvent = window.deleteWorldEvent;
 window.renderInitiative = renderInitiative;
+window.openEditModal = window.openEditModal;
+window.saveEdit = window.saveEdit;
+window.toggleNotifications = window.toggleNotifications;
+window.clearAllNotifications = window.clearAllNotifications;
+window.removeNotification = window.removeNotification;
 </script>
 </body>
 </html>
