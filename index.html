@@ -800,6 +800,101 @@ body {
 #notif-bell:hover { border-color: var(--accent); color: var(--accent); }
 #notif-bell .notif-badge { font-size: 0.6rem; min-width: 16px; height: 16px; }
 
+/* ═══ MODALE LETTURA ════════════════════════════════════════════════════════ */
+#read-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none; align-items: center; justify-content: center;
+  z-index: 600; padding: 1.5rem;
+  backdrop-filter: blur(6px);
+}
+#read-modal-overlay.open { display: flex; }
+#read-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 760px;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  animation: modal-in 0.2s ease;
+}
+#read-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 1rem;
+  flex-shrink: 0;
+}
+#read-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem; font-weight: 600;
+  color: var(--text-pri); flex: 1; line-height: 1.3;
+}
+#read-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-sec);
+  white-space: pre-wrap;
+}
+#read-modal-body .read-section {
+  margin-bottom: 1.25rem;
+}
+#read-modal-body .read-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+#read-modal-body .read-value {
+  color: var(--text-pri);
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+#read-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 0.5rem; justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* ═══ LIGHTBOX IMMAGINI ══════════════════════════════════════════════════════ */
+#lightbox-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: none; align-items: center; justify-content: center;
+  z-index: 700; padding: 1rem;
+  cursor: zoom-out;
+}
+#lightbox-overlay.open { display: flex; }
+#lightbox-img {
+  max-width: 95vw; max-height: 92vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 0 60px rgba(0,0,0,0.8);
+  cursor: default;
+}
+#lightbox-caption {
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  color: #fff; font-family: var(--font-mono); font-size: 0.8rem;
+  padding: 0.4rem 1rem; border-radius: 20px;
+  pointer-events: none;
+}
+#lightbox-close {
+  position: fixed; top: 1rem; right: 1rem;
+  background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; width: 36px; height: 36px;
+  border-radius: 50%; font-size: 1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+#lightbox-close:hover { background: rgba(255,255,255,0.15); }
+
 /* ═══ NOTIFICA TOAST ════════════════════════════════════════════════════════ */
 #toast-container {
   position: fixed; bottom: 1.5rem; right: 1.5rem;
@@ -1291,6 +1386,34 @@ service cloud.firestore {
             <button class="btn btn-primary" onclick="saveSettings()">Salva impostazioni</button>
           </div>
           <div class="card">
+            <div class="card-title" style="margin-bottom:0.75rem;">🔤 Accessibilità & Leggibilità</div>
+            <div class="form-group">
+              <label class="form-label">Dimensione testo — <span id="font-size-label">100%</span></label>
+              <input type="range" id="font-size-slider" min="80" max="140" value="100" step="5"
+                style="width:100%;accent-color:var(--accent);" oninput="applyFontSize(this.value)">
+              <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);font-family:var(--font-mono);margin-top:0.2rem;">
+                <span>Piccolo</span><span>Normale</span><span>Grande</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Spaziatura righe — <span id="line-height-label">Normale</span></label>
+              <input type="range" id="line-height-slider" min="1" max="3" value="2" step="1"
+                style="width:100%;accent-color:var(--accent);" oninput="applyLineHeight(this.value)">
+              <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);font-family:var(--font-mono);margin-top:0.2rem;">
+                <span>Compatta</span><span>Normale</span><span>Ariosa</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Larghezza sidebar</label>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="setSidebarWidth('200px',this)">Stretta</button>
+                <button class="btn btn-secondary btn-sm active-sidebar" onclick="setSidebarWidth('240px',this)">Normale</button>
+                <button class="btn btn-secondary btn-sm" onclick="setSidebarWidth('280px',this)">Larga</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="resetAccessibility()">↺ Ripristina predefiniti</button>
+          </div>
+          <div class="card">
             <div class="card-title" style="margin-bottom:0.5rem;">📡 Stato connessione</div>
             <div class="card-body">
               <span id="conn-status" style="color:var(--success);">● Connesso</span>
@@ -1309,6 +1432,31 @@ service cloud.firestore {
     </div><!-- /content-area -->
   </div><!-- /main -->
 </div><!-- /app -->
+
+<!-- ═══ MODALE LETTURA ═══════════════════════════════════════════════════════ -->
+<div id="read-modal-overlay" onclick="closeReadModal(event)">
+  <div id="read-modal">
+    <div id="read-modal-header">
+      <div>
+        <div id="read-modal-tag" style="margin-bottom:0.4rem;"></div>
+        <div id="read-modal-title">—</div>
+        <div id="read-modal-meta" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem;"></div>
+      </div>
+      <button class="btn btn-secondary btn-icon" onclick="document.getElementById('read-modal-overlay').classList.remove('open')">✕</button>
+    </div>
+    <div id="read-modal-body"></div>
+    <div id="read-modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('read-modal-overlay').classList.remove('open')">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LIGHTBOX IMMAGINI ════════════════════════════════════════════════════ -->
+<div id="lightbox-overlay" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+  <div id="lightbox-caption"></div>
+</div>
 
 <!-- ═══ MODALS ══════════════════════════════════════════════════════════════ -->
 
@@ -1894,6 +2042,9 @@ async function initApp() {
 
   // Note rapide
   loadQuickNotes();
+
+  // Accessibilità
+  loadAccessibilitySettings();
 }
 
 // ─── OROLOGIO ─────────────────────────────────────────────────────────
@@ -2283,6 +2434,8 @@ function cardHtml(item, fields, titleField='title', bodyField='desc') {
   const vis = item._source === 'shared' ? 'shared' : 'private';
   const isMine = item.uid === currentUser?.uid;
   const collName = item._collection || '';
+  const preview = (item[bodyField] || item.synopsis || item.content || item.desc || '');
+  const itemJson = JSON.stringify(item).replace(/'/g, '&#39;');
   return `
     <div class="card">
       <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
@@ -2291,15 +2444,16 @@ function cardHtml(item, fields, titleField='title', bodyField='desc') {
         ${item.category ? `<div class="card-tag event">${esc(item.category)}</div>` : ''}
       </div>
       <div class="card-title">${esc(item[titleField] || item.name || '—')}</div>
-      <div class="card-body" style="white-space:pre-wrap;">${esc((item[bodyField] || item.synopsis || item.content || item.desc || '').substring(0,300))}${((item[bodyField]||item.synopsis||item.content||item.desc||'').length > 300) ? '…' : ''}</div>
+      <div class="card-body" style="white-space:pre-wrap;">${esc(preview.substring(0,180))}${preview.length > 180 ? '<span style="color:var(--text-muted);">… <em>clicca Leggi per tutto</em></span>' : ''}</div>
       <div class="card-meta">
         <span>✍ ${esc(item.createdBy || '—')}</span>
         ${fields.map(f => item[f] ? `<span>${esc(item[f])}</span>` : '').join('')}
       </div>
-      ${isMine ? `<div class="card-actions">
-        <button class="btn btn-secondary btn-sm" onclick='openEditModal(${JSON.stringify(item)})'>✏️ Modifica</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${collName}','${item.id}','${item._source}')">🗑 Elimina</button>
-      </div>` : ''}
+      <div class="card-actions">
+        <button class="btn btn-secondary btn-sm" onclick='openReadModal(${itemJson})'>📖 Leggi</button>
+        ${isMine ? `<button class="btn btn-secondary btn-sm" onclick='openEditModal(${itemJson})'>✏️ Modifica</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${collName}','${item.id}','${item._source}')">🗑 Elimina</button>` : ''}
+      </div>
     </div>`;
 }
 
@@ -2335,7 +2489,8 @@ function renderItems(docs, source) {
     const el = document.getElementById('items-list');
     if (!el) return;
     el.innerHTML = all.length ? all.map(item => {
-      const vis = item._source;
+      const vis = item._source === 'shared' ? 'shared' : 'private';
+      const itemJson = JSON.stringify(item).replace(/'/g,"&#39;");
       const isMine = item.uid === currentUser?.uid;
       return `
         <div class="card">
@@ -2345,15 +2500,16 @@ function renderItems(docs, source) {
             <div class="card-tag event">${esc(item.rarity||'')}</div>
           </div>
           <div class="card-title">${esc(item.name || '—')}</div>
-          <div class="card-body" style="white-space:pre-wrap;">${esc((item.desc||'').substring(0,280))}</div>
+          <div class="card-body" style="white-space:pre-wrap;">${esc((item.desc||'').substring(0,180))}${(item.desc||'').length>180?'<span style="color:var(--text-muted);">… <em>clicca Leggi</em></span>':''}</div>
           <div class="card-meta">
             ${item.owner ? `<span>👤 Trovato da: ${esc(item.owner)}</span>` : ''}
             <span>✍ ${esc(item.createdBy || '')}</span>
           </div>
-          ${isMine ? `<div class="card-actions">
-            <button class="btn btn-secondary btn-sm" onclick='openEditModal(${JSON.stringify(item)})'>✏️ Modifica</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteRecord('items','${item.id}','${item._source}')">🗑 Elimina</button>
-          </div>` : ''}
+          <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" onclick='openReadModal(${itemJson})'>📖 Leggi</button>
+            ${isMine ? `<button class="btn btn-secondary btn-sm" onclick='openEditModal(${itemJson})'>✏️ Modifica</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRecord('items','${item.id}','${item._source}')">🗑 Elimina</button>` : ''}
+          </div>
         </div>`;
     }).join('') : '<div class="empty-state"><div class="empty-icon">💎</div><p>Nessun oggetto.</p></div>';
     document.getElementById('stat-items').textContent = all.length;
@@ -2372,6 +2528,7 @@ function renderPlayers(docs, source) {
     el.innerHTML = all.length ? all.map(p => {
       const vis = p._source || 'private';
       const isMine = p.uid === currentUser?.uid;
+      const pJson = JSON.stringify(p).replace(/'/g,"&#39;");
       return `
         <div class="card">
           <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;">
@@ -2380,11 +2537,11 @@ function renderPlayers(docs, source) {
           <div class="card-title">👤 ${esc(p.charName||'—')} <span class="text-muted" style="font-size:0.8rem;">(${esc(p.realName||'')})</span></div>
           <div class="card-body">${esc(p.race||'')} · ${esc(p.playerClass||'')} · Lv.${esc(p.level||'?')}</div>
           <div class="card-meta"><span>❤ PF Max: ${esc(p.hp||'?')}</span><span>✍ ${esc(p.createdBy||'')}</span></div>
-          ${p.background ? `<div class="card-body" style="margin-top:0.5rem;font-size:0.82rem;white-space:pre-wrap;">${esc(p.background.substring(0,300))}</div>` : ''}
-          ${isMine ? `<div class="card-actions">
-            <button class="btn btn-secondary btn-sm" onclick='openEditModal(${JSON.stringify(p)})'>✏️ Modifica</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteRecord('players','${p.id}','${p._source}')">🗑 Elimina</button>
-          </div>` : ''}
+          <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" onclick='openReadModal(${pJson})'>📖 Leggi</button>
+            ${isMine ? `<button class="btn btn-secondary btn-sm" onclick='openEditModal(${pJson})'>✏️ Modifica</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRecord('players','${p.id}','${p._source}')">🗑 Elimina</button>` : ''}
+          </div>
         </div>`;
     }).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Nessun giocatore.</p></div>';
   });
@@ -2414,14 +2571,15 @@ function renderMaps(docs, source) {
     if (!el) return;
     el.innerHTML = all.length ? all.map(m => {
       const isMine = m.uid === currentUser?.uid;
+      const mJson = JSON.stringify(m).replace(/'/g,"&#39;");
       return `
         <div style="display:flex;flex-direction:column;gap:0;">
-          <div class="map-thumb" onclick="openUrl('${esc(m.url)}')">
+          <div class="map-thumb" onclick="openLightbox('${esc(m.url)}','${esc(m.name)}')">
             ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🗺️</span>'}
             <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
           </div>
           ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.4rem 0;">
-            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${JSON.stringify(m)})'>✏️ Rinomina</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${mJson})'>✏️ Rinomina</button>
             <button class="btn btn-danger btn-sm" onclick="deleteRecord('maps','${m.id}','${m._source}')">🗑</button>
           </div>` : ''}
         </div>`;
@@ -2434,14 +2592,15 @@ function renderImages(docs, source) {
     if (!el) return;
     el.innerHTML = all.length ? all.map(m => {
       const isMine = m.uid === currentUser?.uid;
+      const mJson = JSON.stringify(m).replace(/'/g,"&#39;");
       return `
         <div style="display:flex;flex-direction:column;gap:0;">
-          <div class="map-thumb" onclick="openUrl('${esc(m.url)}')">
+          <div class="map-thumb" onclick="openLightbox('${esc(m.url)}','${esc(m.name)}')">
             ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🖼️</span>'}
             <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
           </div>
           ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.4rem 0;">
-            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${JSON.stringify(m)})'>✏️ Rinomina</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${mJson})'>✏️ Rinomina</button>
             <button class="btn btn-danger btn-sm" onclick="deleteRecord('images','${m.id}','${m._source}')">🗑</button>
           </div>` : ''}
         </div>`;
@@ -2642,6 +2801,149 @@ window.toggleNotifications = () => {
     renderNotifications();
   }
 };
+
+// ─── MODALE LETTURA ────────────────────────────────────────────────────
+const READ_LABELS = {
+  title:'Titolo', name:'Nome', synopsis:'Sinossi', content:'Contenuto',
+  desc:'Descrizione', notes:'Note', abilities:'Abilità', stats:'Statistiche',
+  background:'Background', consequences:'Conseguenze', location:'Posizione',
+  race:'Razza', npcClass:'Classe/Professione', playerClass:'Classe',
+  realName:'Nome reale', charName:'Nome personaggio', role:'Ruolo',
+  type:'Tipo', category:'Categoria', rarity:'Rarità', owner:'Trovato da',
+  level:'Livello', hp:'PF Max', url:'Link', duration:'Durata', mood:'Umore',
+  date:'Data', createdBy:'Creato da', dmName:'DM'
+};
+const READ_SKIP = new Set(['id','uid','_source','_collection','createdAt','updatedAt',
+  'updatedBy','visibility','isUnique','_id']);
+const READ_ICONS = {
+  plots:'📜', lore:'📖', npcs:'🧙', items:'💎', races:'🐉', rules:'⚖️',
+  sessions:'⚡', players:'👤', maps:'🗺️', images:'🖼️', music:'🎵',
+  worldEvents:'🌍'
+};
+
+window.openReadModal = (itemJson) => {
+  const item = typeof itemJson === 'string' ? JSON.parse(itemJson) : itemJson;
+  const coll = item._collection || '';
+  const vis  = item._source || 'private';
+
+  // Titolo
+  document.getElementById('read-modal-title').textContent =
+    item.title || item.name || item.charName || '—';
+
+  // Tag visibilità
+  const tagEl = document.getElementById('read-modal-tag');
+  tagEl.innerHTML = `<span class="card-tag ${vis}">${vis==='shared'?'🌐 Condivisa':'🔒 Privata'}</span>` +
+    (coll ? ` <span class="card-tag public">${READ_ICONS[coll]||''} ${coll}</span>` : '');
+
+  // Meta
+  const metaParts = [];
+  if (item.createdBy) metaParts.push(`✍ ${item.createdBy}`);
+  if (item.createdAt?.seconds) {
+    const d = new Date(item.createdAt.seconds * 1000);
+    metaParts.push(d.toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'}));
+  }
+  document.getElementById('read-modal-meta').textContent = metaParts.join(' · ');
+
+  // Corpo — tutti i campi significativi
+  const body = document.getElementById('read-modal-body');
+  const priority = ['synopsis','content','desc','notes','abilities','background',
+                    'consequences','stats','abilities'];
+  const shown = new Set();
+  let html = '';
+
+  // Prima i campi principali nell'ordine giusto
+  for (const key of priority) {
+    if (item[key] && !READ_SKIP.has(key) && !shown.has(key)) {
+      shown.add(key);
+      html += `<div class="read-section">
+        <div class="read-label">${READ_LABELS[key]||key}</div>
+        <div class="read-value">${esc(item[key])}</div>
+      </div>`;
+    }
+  }
+  // Poi tutti gli altri campi non ancora mostrati
+  for (const [key, val] of Object.entries(item)) {
+    if (!val || READ_SKIP.has(key) || shown.has(key) || priority.includes(key)) continue;
+    if (typeof val === 'object') continue;
+    shown.add(key);
+    html += `<div class="read-section">
+      <div class="read-label">${READ_LABELS[key]||key}</div>
+      <div class="read-value">${esc(String(val))}</div>
+    </div>`;
+  }
+  body.innerHTML = html || '<p class="text-muted">Nessun contenuto.</p>';
+
+  document.getElementById('read-modal-overlay').classList.add('open');
+};
+
+window.closeReadModal = (e) => {
+  if (e.target === document.getElementById('read-modal-overlay')) {
+    document.getElementById('read-modal-overlay').classList.remove('open');
+  }
+};
+
+// ─── LIGHTBOX IMMAGINI ─────────────────────────────────────────────────
+window.openLightbox = (url, caption) => {
+  if (!url) return;
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox-caption').textContent = caption || '';
+  document.getElementById('lightbox-overlay').classList.add('open');
+};
+window.closeLightbox = () => {
+  document.getElementById('lightbox-overlay').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
+};
+// Chiudi con ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('lightbox-overlay')?.classList.remove('open');
+    document.getElementById('read-modal-overlay')?.classList.remove('open');
+  }
+});
+
+// ─── ACCESSIBILITÀ ─────────────────────────────────────────────────────
+const lineHeightLabels = ['Compatta','Normale','Ariosa'];
+const lineHeightValues = ['1.4','1.75','2.2'];
+
+window.applyFontSize = (val) => {
+  document.documentElement.style.fontSize = (val / 100 * 16) + 'px';
+  document.getElementById('font-size-label').textContent = val + '%';
+  localStorage.setItem('chronicler-fontsize', val);
+};
+window.applyLineHeight = (val) => {
+  const idx = parseInt(val) - 1;
+  document.body.style.lineHeight = lineHeightValues[idx];
+  document.getElementById('line-height-label').textContent = lineHeightLabels[idx];
+  localStorage.setItem('chronicler-lineheight', val);
+};
+window.setSidebarWidth = (w, btn) => {
+  document.documentElement.style.setProperty('--sidebar-w', w);
+  document.querySelectorAll('.active-sidebar').forEach(b => b.classList.remove('active-sidebar'));
+  btn?.classList.add('active-sidebar');
+  localStorage.setItem('chronicler-sidebarw', w);
+};
+window.resetAccessibility = () => {
+  document.documentElement.style.fontSize = '16px';
+  document.body.style.lineHeight = '';
+  document.documentElement.style.setProperty('--sidebar-w', '240px');
+  document.getElementById('font-size-slider').value = 100;
+  document.getElementById('line-height-slider').value = 2;
+  document.getElementById('font-size-label').textContent = '100%';
+  document.getElementById('line-height-label').textContent = 'Normale';
+  localStorage.removeItem('chronicler-fontsize');
+  localStorage.removeItem('chronicler-lineheight');
+  localStorage.removeItem('chronicler-sidebarw');
+  toast('Impostazioni ripristinate', 'info');
+};
+
+function loadAccessibilitySettings() {
+  const fs = localStorage.getItem('chronicler-fontsize');
+  const lh = localStorage.getItem('chronicler-lineheight');
+  const sw = localStorage.getItem('chronicler-sidebarw');
+  if (fs) { document.getElementById('font-size-slider').value = fs; applyFontSize(fs); }
+  if (lh) { document.getElementById('line-height-slider').value = lh; applyLineHeight(lh); }
+  if (sw) { document.documentElement.style.setProperty('--sidebar-w', sw); }
+}
 
 // ─── MODAL MODIFICA GENERICA ───────────────────────────────────────────
 let _editItem = null;
@@ -2866,6 +3168,14 @@ window.saveEdit = window.saveEdit;
 window.toggleNotifications = window.toggleNotifications;
 window.clearAllNotifications = window.clearAllNotifications;
 window.removeNotification = window.removeNotification;
+window.openReadModal = window.openReadModal;
+window.closeReadModal = window.closeReadModal;
+window.openLightbox = window.openLightbox;
+window.closeLightbox = window.closeLightbox;
+window.applyFontSize = window.applyFontSize;
+window.applyLineHeight = window.applyLineHeight;
+window.setSidebarWidth = window.setSidebarWidth;
+window.resetAccessibility = window.resetAccessibility;
 </script>
 </body>
 </html>
