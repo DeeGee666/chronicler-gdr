@@ -2511,7 +2511,7 @@ function renderItems(docs, source) {
             <div class="card-tag event">${esc(item.rarity||'')}</div>
           </div>
           <div class="card-title">${esc(item.name || '—')}</div>
-          <div class="card-body">${esc(stripHtml(item.desc||'').substring(0,180))}${stripHtml(item.desc||'').length>180?'<span style="color:var(--text-muted);">… <em>clicca Leggi</em></span>':''</div>
+          <div class="card-body">${esc(stripHtml(item.desc||'').substring(0,180))}${stripHtml(item.desc||'').length>180?'<span style="color:var(--text-muted);">… <em>clicca Leggi</em></span>':''}</div>
           <div class="card-meta">
             ${item.owner ? `<span>👤 Trovato da: ${esc(item.owner)}</span>` : ''}
             <span>✍ ${esc(item.createdBy || '')}</span>
