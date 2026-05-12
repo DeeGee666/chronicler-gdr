@@ -2874,57 +2874,34 @@ window.toggleNotifications = () => {
 };
 
 // ─── RICH TEXT EDITOR ─────────────────────────────────────────────────
-function buildRTE(fieldId, placeholder, initialHtml) {
-  initialHtml = initialHtml || '';
-  return '<div class="rte-wrap">' +
-    '<div class="rte-toolbar">' +
-      '<button type="button" class="rte-btn" title="Grassetto" onclick="rteCmd('bold','' + fieldId + '')"><b>G</b></button>' +
-      '<button type="button" class="rte-btn" title="Corsivo" onclick="rteCmd('italic','' + fieldId + '')"><i>C</i></button>' +
-      '<button type="button" class="rte-btn" title="Sottolineato" onclick="rteCmd('underline','' + fieldId + '')"><u>S</u></button>' +
-      '<div class="rte-sep"></div>' +
-      '<select class="rte-size-select" title="Dimensione" onchange="rteSize(this,'' + fieldId + '')">' +
-        '<option value="">Dim.</option>' +
-        '<option value="1">Piccolo</option>' +
-        '<option value="3">Normale</option>' +
-        '<option value="5">Grande</option>' +
-        '<option value="7">Molto grande</option>' +
-      '</select>' +
-      '<div class="rte-sep"></div>' +
-      '<input type="color" class="rte-color-input" title="Colore testo" value="#e8d5a3" onchange="rteColor(this.value,'' + fieldId + '')">' +
-      '<div class="rte-sep"></div>' +
-      '<button type="button" class="rte-btn" title="Rimuovi formattazione" onclick="rteClear('' + fieldId + '')">✕fmt</button>' +
-    '</div>' +
-    '<div class="rte-editor" id="' + fieldId + '" contenteditable="true" data-placeholder="' + placeholder + '" onpaste="rtePaste(event)">' + initialHtml + '</div>' +
-  '</div>';
-}
-window.rteCmd = (cmd, id) => {
-  const el = document.getElementById(id);
-  el && el.focus();
+window.rteCmd = function(cmd, id) {
+  var el = document.getElementById(id);
+  if (el) el.focus();
   document.execCommand(cmd, false, null);
 };
-window.rteSize = (sel, id) => {
-  const el = document.getElementById(id);
-  el && el.focus();
+window.rteSize = function(sel, id) {
+  var el = document.getElementById(id);
+  if (el) el.focus();
   if (sel.value) document.execCommand('fontSize', false, sel.value);
-  setTimeout(() => { sel.value = ''; }, 10);
+  setTimeout(function() { sel.value = ''; }, 10);
 };
-window.rteColor = (color, id) => {
-  const el = document.getElementById(id);
-  el && el.focus();
+window.rteColor = function(color, id) {
+  var el = document.getElementById(id);
+  if (el) el.focus();
   document.execCommand('foreColor', false, color);
 };
-window.rteClear = (id) => {
-  const el = document.getElementById(id);
-  el && el.focus();
+window.rteClear = function(id) {
+  var el = document.getElementById(id);
+  if (el) el.focus();
   document.execCommand('removeFormat', false, null);
 };
-window.rtePaste = (e) => {
+window.rtePaste = function(e) {
   e.preventDefault();
-  const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+  var text = (e.clipboardData || window.clipboardData).getData('text/plain');
   document.execCommand('insertText', false, text);
 };
 function rteGetHtml(id) {
-  const el = document.getElementById(id);
+  var el = document.getElementById(id);
   return el ? el.innerHTML : '';
 }
 
@@ -3081,124 +3058,108 @@ window.openEditModal = (item) => {
 };
 
 function buildEditFields(item, coll) {
-  const vis = item._source || 'private';
-  const visSwitch = `
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn ${vis==='private'?'active private':''}" data-vis="private" onclick="pickVis(this,'edit-vis')">🔒 Privata</button>
-        <button class="vis-btn ${vis==='shared'?'active shared':''}" data-vis="shared" onclick="pickVis(this,'edit-vis')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="edit-vis" value="${vis}">
-    </div>`;
+  var vis = item._source || 'private';
+  var vp = vis === 'private' ? 'active private' : '';
+  var vs = vis === 'shared' ? 'active shared' : '';
+  var visSwitch = '<div class="form-group"><label class="form-label">Visibilita\'</label>' +
+    '<div class="visibility-switch">' +
+    '<button class="vis-btn ' + vp + '" data-vis="private" onclick="pickVis(this,\'edit-vis\')">🔒 Privata</button>' +
+    '<button class="vis-btn ' + vs + '" data-vis="shared" onclick="pickVis(this,\'edit-vis\')">🌐 Condivisa</button>' +
+    '</div><input type="hidden" id="edit-vis" value="' + vis + '"></div>';
 
-  const schemas = {
-    plots: `
-      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
-      <div class="form-group"><label class="form-label">Tipo</label>
-        <select class="form-select" id="ef-type">
-          ${['main','side','secret','shared'].map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}
-        </select></div>
-      <div class="form-group"><label class="form-label">Sinossi</label><div class="rte-editor" id="ef-synopsis" contenteditable="true" onpaste="rtePaste(event)">${item.synopsis||''</div></div>
-      <div class="form-group"><label class="form-label">Note interne</label><div class="rte-editor" id="ef-notes" contenteditable="true" onpaste="rtePaste(event)">${item.notes||''</div></div>
-      ${visSwitch}`,
-    lore: `
-      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
-      <div class="form-group"><label class="form-label">Categoria</label>
-        <select class="form-select" id="ef-category">
-          ${['history','place','religion','politics','other'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
-        </select></div>
-      <div class="form-group"><label class="form-label">Contenuto</label><div class="rte-editor" id="ef-content" contenteditable="true" onpaste="rtePaste(event)">${item.content||''</div></div>
-      ${visSwitch}`,
-    npcs: `
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
-        <div class="form-group"><label class="form-label">Ruolo</label>
-          <select class="form-select" id="ef-role">
-            ${['ally','enemy','neutral','faction'].map(t=>`<option value="${t}" ${item.role===t?'selected':''}>${t}</option>`).join('')}
-          </select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="ef-race" value="${esc(item.race||'')}"></div>
-        <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="ef-npcClass" value="${esc(item.npcClass||'')}"></div>
-      </div>
-      <div class="form-group"><label class="form-label">Descrizione</label><div class="rte-editor" id="ef-desc" contenteditable="true" onpaste="rtePaste(event)">${item.desc||''</div></div>
-      <div class="form-group"><label class="form-label">Statistiche</label><input class="form-input" id="ef-stats" value="${esc(item.stats||'')}"></div>
-      ${visSwitch}`,
-    items: `
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
-        <div class="form-group"><label class="form-label">Rarità</label>
-          <select class="form-select" id="ef-rarity">
-            ${['common','uncommon','rare','legendary','unique'].map(t=>`<option value="${t}" ${item.rarity===t?'selected':''}>${t}</option>`).join('')}
-          </select></div>
-      </div>
-      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc">${esc(item.desc||'')}</textarea></div>
-      <div class="form-group"><label class="form-label">Trovato da</label><input class="form-input" id="ef-owner" value="${esc(item.owner||'')}"></div>
-      ${visSwitch}`,
-    races: `
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
-        <div class="form-group"><label class="form-label">Tipo</label>
-          <select class="form-select" id="ef-type">
-            ${['race','class','subrace'].map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}
-          </select></div>
-      </div>
-      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc">${esc(item.desc||'')}</textarea></div>
-      <div class="form-group"><label class="form-label">Abilità</label><div class="rte-editor" id="ef-abilities" contenteditable="true" onpaste="rtePaste(event)">${item.abilities||''</div></div>
-      ${visSwitch}`,
-    rules: `
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
-        <div class="form-group"><label class="form-label">Categoria</label>
-          <select class="form-select" id="ef-category">
-            ${['combat','magic','skills','general'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
-          </select></div>
-      </div>
-      <div class="form-group"><label class="form-label">Descrizione</label><div class="rte-editor" id="ef-desc" contenteditable="true" onpaste="rtePaste(event)">${item.desc||''</div></div>
-      ${visSwitch}`,
-    sessions: `
-      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
-      <div class="form-group"><label class="form-label">Data</label><input class="form-input" type="date" id="ef-date" value="${esc(item.date||'')}"></div>
-      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="ef-notes">${esc(item.notes||'')}</textarea></div>
-      ${visSwitch}`,
-    players: `
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Nome reale</label><input class="form-input" id="ef-realName" value="${esc(item.realName||'')}"></div>
-        <div class="form-group"><label class="form-label">Nome personaggio</label><input class="form-input" id="ef-charName" value="${esc(item.charName||'')}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="ef-race" value="${esc(item.race||'')}"></div>
-        <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="ef-playerClass" value="${esc(item.playerClass||'')}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Livello</label><input class="form-input" type="number" id="ef-level" value="${esc(item.level||'')}"></div>
-        <div class="form-group"><label class="form-label">PF Max</label><input class="form-input" type="number" id="ef-hp" value="${esc(item.hp||'')}"></div>
-      </div>
-      <div class="form-group"><label class="form-label">Background</label><div class="rte-editor" id="ef-background" contenteditable="true" onpaste="rtePaste(event)">${item.background||''</div></div>
-      ${visSwitch}`,
-    music: `
-      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
-      <div class="form-group"><label class="form-label">URL</label><input class="form-input" type="url" id="ef-url" value="${esc(item.url||'')}"></div>
-      <div class="form-group"><label class="form-label">Durata</label><input class="form-input" id="ef-duration" value="${esc(item.duration||'')}"></div>
-      <div class="form-group"><label class="form-label">Umore</label>
-        <select class="form-select" id="ef-mood">
-          ${['combat','explore','tension','ambient'].map(t=>`<option value="${t}" ${item.mood===t?'selected':''}>${t}</option>`).join('')}
-        </select></div>
-      ${visSwitch}`,
-    maps: `
-      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
-      <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="ef-notes">${esc(item.notes||'')}</textarea></div>
-      ${visSwitch}`,
-    images: `
-      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-name" value="${esc(item.name||'')}"></div>
-      <div class="form-group"><label class="form-label">Categoria</label>
-        <select class="form-select" id="ef-category">
-          ${['character','place','item','creature','other'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
-        </select></div>
-      ${visSwitch}`,
+  function inp(id, val) {
+    return '<input class="form-input" id="' + id + '" value="' + esc(val||'') + '">';
+  }
+  function sel(id, options, current) {
+    return '<select class="form-select" id="' + id + '">' +
+      options.map(function(t){ return '<option value="' + t + '"' + (current===t?' selected':'') + '>' + t + '</option>'; }).join('') +
+      '</select>';
+  }
+  function rte(id, val) {
+    return '<div class="rte-wrap">' +
+      '<div class="rte-toolbar">' +
+      '<button type="button" class="rte-btn" onclick="rteCmd(\'bold\',\'' + id + '\')"><b>G</b></button>' +
+      '<button type="button" class="rte-btn" onclick="rteCmd(\'italic\',\'' + id + '\')"><i>C</i></button>' +
+      '<button type="button" class="rte-btn" onclick="rteCmd(\'underline\',\'' + id + '\')"><u>S</u></button>' +
+      '<div class="rte-sep"></div>' +
+      '<select class="rte-size-select" onchange="rteSize(this,\'' + id + '\')">' +
+      '<option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option>' +
+      '</select>' +
+      '<div class="rte-sep"></div>' +
+      '<input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,\'' + id + '\')">' +
+      '<div class="rte-sep"></div>' +
+      '<button type="button" class="rte-btn" onclick="rteClear(\'' + id + '\')">&#x2715;fmt</button>' +
+      '</div>' +
+      '<div class="rte-editor" id="' + id + '" contenteditable="true" onpaste="rtePaste(event)">' + (val||'') + '</div>' +
+      '</div>';
+  }
+  function fg(label, content) {
+    return '<div class="form-group"><label class="form-label">' + label + '</label>' + content + '</div>';
+  }
+  function fr(left, right) {
+    return '<div class="form-row">' + left + right + '</div>';
+  }
+
+  var schemas = {
+    plots:
+      fg('Titolo', inp('ef-title', item.title)) +
+      fg('Tipo', sel('ef-type', ['main','side','secret','shared'], item.type)) +
+      fg('Sinossi', rte('ef-synopsis', item.synopsis)) +
+      fg('Note interne', rte('ef-notes', item.notes)) +
+      visSwitch,
+    lore:
+      fg('Titolo', inp('ef-title', item.title)) +
+      fg('Categoria', sel('ef-category', ['history','place','religion','politics','other'], item.category)) +
+      fg('Contenuto', rte('ef-content', item.content)) +
+      visSwitch,
+    npcs:
+      fr(fg('Nome', inp('ef-name', item.name)), fg('Ruolo', sel('ef-role', ['ally','enemy','neutral','faction'], item.role))) +
+      fr(fg('Razza', inp('ef-race', item.race)), fg('Classe', inp('ef-npcClass', item.npcClass))) +
+      fg('Descrizione', rte('ef-desc', item.desc)) +
+      fg('Statistiche', inp('ef-stats', item.stats)) +
+      visSwitch,
+    items:
+      fr(fg('Nome', inp('ef-name', item.name)), fg('Rarit\u00e0', sel('ef-rarity', ['common','uncommon','rare','legendary','unique'], item.rarity))) +
+      fg('Descrizione', rte('ef-desc', item.desc)) +
+      fg('Trovato da', inp('ef-owner', item.owner)) +
+      visSwitch,
+    races:
+      fr(fg('Nome', inp('ef-name', item.name)), fg('Tipo', sel('ef-type', ['race','class','subrace'], item.type))) +
+      fg('Descrizione', rte('ef-desc', item.desc)) +
+      fg('Abilit\u00e0', rte('ef-abilities', item.abilities)) +
+      visSwitch,
+    rules:
+      fr(fg('Titolo', inp('ef-title', item.title)), fg('Categoria', sel('ef-category', ['combat','magic','skills','general'], item.category))) +
+      fg('Descrizione', rte('ef-desc', item.desc)) +
+      visSwitch,
+    sessions:
+      fg('Titolo', inp('ef-title', item.title)) +
+      fg('Data', '<input class="form-input" type="date" id="ef-date" value="' + esc(item.date||'') + '">') +
+      fg('Note', rte('ef-notes', item.notes)) +
+      visSwitch,
+    players:
+      fr(fg('Nome reale', inp('ef-realName', item.realName)), fg('Nome personaggio', inp('ef-charName', item.charName))) +
+      fr(fg('Razza', inp('ef-race', item.race)), fg('Classe', inp('ef-playerClass', item.playerClass))) +
+      fr(fg('Livello', '<input class="form-input" type="number" id="ef-level" value="' + esc(item.level||'') + '">'),
+         fg('PF Max', '<input class="form-input" type="number" id="ef-hp" value="' + esc(item.hp||'') + '">')) +
+      fg('Background', rte('ef-background', item.background)) +
+      visSwitch,
+    music:
+      fg('Titolo', inp('ef-title', item.title)) +
+      fg('URL', '<input class="form-input" type="url" id="ef-url" value="' + esc(item.url||'') + '">') +
+      fg('Durata', inp('ef-duration', item.duration)) +
+      fg('Umore', sel('ef-mood', ['combat','explore','tension','ambient'], item.mood)) +
+      visSwitch,
+    maps:
+      fg('Nome', inp('ef-name', item.name)) +
+      fg('Note', rte('ef-notes', item.notes)) +
+      visSwitch,
+    images:
+      fg('Titolo', inp('ef-name', item.name)) +
+      fg('Categoria', sel('ef-category', ['character','place','item','creature','other'], item.category)) +
+      visSwitch,
   };
-  return schemas[coll] || `<p class="text-muted">Modifica non disponibile per questa sezione.</p>`;
+  return schemas[coll] || '<p class="text-muted">Modifica non disponibile per questa sezione.</p>';
 }
 
 window.saveEdit = async () => {
