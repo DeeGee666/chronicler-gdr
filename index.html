@@ -831,29 +831,50 @@ body {
   color: var(--text-pri); flex: 1; line-height: 1.3;
 }
 #read-modal-body {
-  padding: 1.5rem;
+  padding: 0.75rem 1.25rem 1rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
-  font-size: 1rem;
-  line-height: 1.8;
+  font-size: 0.93rem;
   color: var(--text-sec);
-  white-space: pre-wrap;
 }
 #read-modal-body .read-section {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0 0.75rem;
+  align-items: baseline;
 }
+#read-modal-body .read-section:last-child { border-bottom: none; }
 #read-modal-body .read-label {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 0.3rem;
+  padding-top: 0.15rem;
+  flex-shrink: 0;
 }
 #read-modal-body .read-value {
   color: var(--text-pri);
+  line-height: 1.6;
+  word-break: break-word;
+  overflow-wrap: break-word;
   white-space: pre-wrap;
-  line-height: 1.7;
+  max-width: 100%;
+  overflow-x: hidden;
+  min-width: 0;
+}
+/* Rich text (HTML): non usare pre-wrap */
+#read-modal-body .read-value.rich {
+  white-space: normal;
+}
+#read-modal-body .read-value.rich * {
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 #read-modal-footer {
   padding: 1rem 1.5rem;
@@ -861,6 +882,49 @@ body {
   display: flex; gap: 0.5rem; justify-content: flex-end;
   flex-shrink: 0;
 }
+
+/* ═══ RICH TEXT EDITOR ═══════════════════════════════════════════════════════ */
+.rte-wrap { display: flex; flex-direction: column; }
+.rte-toolbar {
+  display: flex; flex-wrap: wrap; gap: 0.2rem; align-items: center;
+  padding: 0.3rem 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.rte-btn {
+  padding: 0.15rem 0.4rem;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text-sec);
+  font-size: 0.78rem; cursor: pointer;
+  transition: all var(--transition); line-height: 1.4;
+}
+.rte-btn:hover { background: var(--bg-hover); color: var(--text-pri); border-color: var(--border-hi); }
+.rte-sep { width: 1px; background: var(--border); align-self: stretch; margin: 2px 3px; }
+.rte-size-select {
+  padding: 0.1rem 0.3rem; font-size: 0.72rem;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text-sec); cursor: pointer;
+}
+.rte-color-input {
+  width: 22px; height: 22px; border-radius: 3px;
+  border: 1px solid var(--border); cursor: pointer;
+  padding: 1px; background: transparent;
+}
+.rte-editor {
+  width: 100%; min-height: 90px;
+  padding: 0.55rem 0.8rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  color: var(--text-pri);
+  font-family: var(--font-body); font-size: 0.92rem;
+  line-height: 1.6; outline: none;
+  word-break: break-word; overflow-wrap: break-word; overflow-x: hidden;
+}
+.rte-editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.rte-editor:empty:before { content: attr(data-placeholder); color: var(--text-muted); pointer-events: none; }
 
 /* ═══ LIGHTBOX IMMAGINI ══════════════════════════════════════════════════════ */
 #lightbox-overlay {
@@ -1469,7 +1533,7 @@ service cloud.firestore {
     </div>
     <div class="form-group"><label class="form-label">Titolo sessione</label><input class="form-input" id="s-title" placeholder="Es. La Cripta Maledetta"></div>
     <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="s-date" type="date"></div>
-    <div class="form-group"><label class="form-label">Note pre-sessione</label><textarea class="form-textarea" id="s-notes" placeholder="Preparazione, obiettivi..."></textarea></div>
+    <div class="form-group"><label class="form-label">Note pre-sessione</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','s-notes')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','s-notes')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','s-notes')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'s-notes')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'s-notes')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('s-notes')">✕fmt</button></div><div class="rte-editor" id="s-notes" contenteditable="true" data-placeholder="Preparazione, obiettivi..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
       <div class="visibility-switch">
@@ -1503,9 +1567,9 @@ service cloud.firestore {
         <option value="other">🔀 Altro evento</option>
       </select>
     </div>
-    <div class="form-group"><label class="form-label">Descrizione (cosa è successo)</label><textarea class="form-textarea" id="we-desc" placeholder="Descrivi l'evento e le sue conseguenze..."></textarea></div>
+    <div class="form-group"><label class="form-label">Descrizione (cosa è successo)</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','we-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','we-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','we-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'we-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'we-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('we-desc')">✕fmt</button></div><div class="rte-editor" id="we-desc" contenteditable="true" data-placeholder="Descrivi l'evento e le sue conseguenze..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group"><label class="form-label">Posizione nel mondo (opzionale)</label><input class="form-input" id="we-location" placeholder="Es. Foresta di Eldrath, settore nord"></div>
-    <div class="form-group"><label class="form-label">Conseguenze per l'altro tavolo</label><textarea class="form-textarea" id="we-consequences" placeholder="Cosa deve sapere l'altro DM? Effetti sul suo tavolo..."></textarea></div>
+    <div class="form-group"><label class="form-label">Conseguenze per l'altro tavolo</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','we-consequences')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','we-consequences')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','we-consequences')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'we-consequences')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'we-consequences')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('we-consequences')">✕fmt</button></div><div class="rte-editor" id="we-consequences" contenteditable="true" data-placeholder="Cosa deve sapere l'altro DM?" onpaste="rtePaste(event)"></div></div></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('world-event-modal')">Annulla</button>
       <button class="btn btn-primary" onclick="saveWorldEvent()">📡 Pubblica evento</button>
@@ -1529,8 +1593,8 @@ service cloud.firestore {
         <option value="shared">Trama condivisa</option>
       </select>
     </div>
-    <div class="form-group"><label class="form-label">Sinossi</label><textarea class="form-textarea" id="p-synopsis" placeholder="Riassunto della trama..."></textarea></div>
-    <div class="form-group"><label class="form-label">Note interne (private)</label><textarea class="form-textarea" id="p-notes" placeholder="Note solo per te..."></textarea></div>
+    <div class="form-group"><label class="form-label">Sinossi</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','p-synopsis')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','p-synopsis')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','p-synopsis')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'p-synopsis')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'p-synopsis')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('p-synopsis')">✕fmt</button></div><div class="rte-editor" id="p-synopsis" contenteditable="true" data-placeholder="Riassunto della trama..." onpaste="rtePaste(event)"></div></div></div>
+    <div class="form-group"><label class="form-label">Note interne (private)</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','p-notes')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','p-notes')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','p-notes')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'p-notes')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'p-notes')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('p-notes')">✕fmt</button></div><div class="rte-editor" id="p-notes" contenteditable="true" data-placeholder="Note solo per te..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
       <div class="visibility-switch">
@@ -1565,7 +1629,7 @@ service cloud.firestore {
         </select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Contenuto</label><textarea class="form-textarea" id="l-content" style="min-height:120px;" placeholder="Descrizione dettagliata..."></textarea></div>
+    <div class="form-group"><label class="form-label">Contenuto</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','l-content')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','l-content')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','l-content')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'l-content')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'l-content')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('l-content')">✕fmt</button></div><div class="rte-editor" id="l-content" contenteditable="true" data-placeholder="Descrizione dettagliata..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
       <div class="visibility-switch">
@@ -1603,7 +1667,7 @@ service cloud.firestore {
       <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="n-race" placeholder="Es. Elfo"></div>
       <div class="form-group"><label class="form-label">Classe / Professione</label><input class="form-input" id="n-class" placeholder="Es. Mago del Consiglio"></div>
     </div>
-    <div class="form-group"><label class="form-label">Descrizione & Background</label><textarea class="form-textarea" id="n-desc" placeholder="Chi è, cosa vuole, segreti..."></textarea></div>
+    <div class="form-group"><label class="form-label">Descrizione & Background</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','n-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','n-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','n-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'n-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'n-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('n-desc')">✕fmt</button></div><div class="rte-editor" id="n-desc" contenteditable="true" data-placeholder="Chi è, cosa vuole, segreti..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group"><label class="form-label">Statistiche (libere)</label><input class="form-input" id="n-stats" placeholder="Es. PF:40, CA:14, ATT:+6"></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
@@ -1639,7 +1703,7 @@ service cloud.firestore {
         </select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Descrizione & Proprietà</label><textarea class="form-textarea" id="i-desc" placeholder="Effetti, storia, requisiti..."></textarea></div>
+    <div class="form-group"><label class="form-label">Descrizione & Proprietà</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','i-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','i-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','i-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'i-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'i-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('i-desc')">✕fmt</button></div><div class="rte-editor" id="i-desc" contenteditable="true" data-placeholder="Effetti, storia, requisiti..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <div class="form-check">
         <input type="checkbox" id="i-unique" onchange="document.getElementById('i-rarity').value='unique'">
@@ -1682,8 +1746,8 @@ service cloud.firestore {
         </select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="r-desc" placeholder="Caratteristiche, bonus, storia..."></textarea></div>
-    <div class="form-group"><label class="form-label">Abilità razziali / di classe</label><textarea class="form-textarea" id="r-abilities" placeholder="Elenca le abilità..."></textarea></div>
+    <div class="form-group"><label class="form-label">Descrizione</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','r-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','r-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','r-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'r-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'r-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('r-desc')">✕fmt</button></div><div class="rte-editor" id="r-desc" contenteditable="true" data-placeholder="Caratteristiche, bonus, storia..." onpaste="rtePaste(event)"></div></div></div>
+    <div class="form-group"><label class="form-label">Abilità razziali / di classe</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','r-abilities')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','r-abilities')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','r-abilities')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'r-abilities')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'r-abilities')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('r-abilities')">✕fmt</button></div><div class="rte-editor" id="r-abilities" contenteditable="true" data-placeholder="Elenca le abilità..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
       <div class="visibility-switch">
@@ -1717,7 +1781,7 @@ service cloud.firestore {
         </select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Descrizione regola</label><textarea class="form-textarea" id="ru-desc" style="min-height:120px;" placeholder="Spiega la regola nel dettaglio..."></textarea></div>
+    <div class="form-group"><label class="form-label">Descrizione regola</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','ru-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','ru-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','ru-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'ru-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'ru-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('ru-desc')">✕fmt</button></div><div class="rte-editor" id="ru-desc" contenteditable="true" data-placeholder="Spiega la regola nel dettaglio..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
       <div class="visibility-switch">
@@ -1750,7 +1814,7 @@ service cloud.firestore {
       </select>
     </div>
     <div class="form-group"><label class="form-label">File immagine</label><input type="file" class="form-input" id="m-file" accept="image/*"></div>
-    <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="m-notes" placeholder="Punti di interesse, note..."></textarea></div>
+    <div class="form-group"><label class="form-label">Note</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','m-notes')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','m-notes')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','m-notes')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'m-notes')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'m-notes')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('m-notes')">✕fmt</button></div><div class="rte-editor" id="m-notes" contenteditable="true" data-placeholder="Punti di interesse, note..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
       <div class="visibility-switch">
@@ -1851,7 +1915,7 @@ service cloud.firestore {
       <div class="form-group"><label class="form-label">Livello</label><input class="form-input" id="pl-level" type="number" placeholder="1" min="1"></div>
       <div class="form-group"><label class="form-label">PF Max</label><input class="form-input" id="pl-hp" type="number" placeholder="20" min="1"></div>
     </div>
-    <div class="form-group"><label class="form-label">Background & Note</label><textarea class="form-textarea" id="pl-bg" placeholder="Background del personaggio, motivazioni, segreti..."></textarea></div>
+    <div class="form-group"><label class="form-label">Background & Note</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','pl-bg')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','pl-bg')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','pl-bg')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'pl-bg')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'pl-bg')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('pl-bg')">✕fmt</button></div><div class="rte-editor" id="pl-bg" contenteditable="true" data-placeholder="Background del personaggio, motivazioni, segreti..." onpaste="rtePaste(event)"></div></div></div>
     <div class="form-group">
       <label class="form-label">Visibilità</label>
       <div class="visibility-switch">
@@ -2139,7 +2203,8 @@ window.saveRecord = async (collName, modalId, fields) => {
   const data = { createdAt: serverTimestamp(), createdBy: dmName, uid: currentUser.uid };
   for (const [key, elId] of Object.entries(fields)) {
     const el = document.getElementById(elId);
-    data[key] = el ? el.value : '';
+    if (!el) { data[key] = ''; continue; }
+    data[key] = el.contentEditable === 'true' ? el.innerHTML : el.value;
   }
   const vis = data.visibility || 'private';
   try {
@@ -2206,14 +2271,19 @@ async function deleteRecord(collName, id, visibility) {
 }
 
 // ─── OGGETTO SPECIALE (unico) ─────────────────────────────────────────
+function getFieldVal(id) {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  return el.contentEditable === 'true' ? el.innerHTML : el.value;
+}
 window.saveItem = async () => {
   if (!currentUser) return;
-  const name = document.getElementById('i-name').value;
-  const rarity = document.getElementById('i-rarity').value;
-  const desc = document.getElementById('i-desc').value;
+  const name = getFieldVal('i-name');
+  const rarity = getFieldVal('i-rarity');
+  const desc = getFieldVal('i-desc');
   const isUnique = rarity === 'unique' || document.getElementById('i-unique').checked;
-  const owner = document.getElementById('i-owner').value;
-  const vis = document.getElementById('vis-item').value;
+  const owner = getFieldVal('i-owner');
+  const vis = getFieldVal('vis-item');
 
   const data = {
     name, rarity, desc, isUnique, owner,
@@ -2255,10 +2325,10 @@ window.saveWorldEvent = async () => {
   try {
     await publishWorldEvent({
       title,
-      type:         document.getElementById('we-type').value,
-      desc:         document.getElementById('we-desc').value,
-      location:     document.getElementById('we-location').value,
-      consequences: document.getElementById('we-consequences').value,
+      type:         getFieldVal('we-type'),
+      desc:         getFieldVal('we-desc'),
+      location:     getFieldVal('we-location'),
+      consequences: getFieldVal('we-consequences'),
       dmName, uid: currentUser.uid
     });
     closeModal('world-event-modal');
@@ -2729,6 +2799,7 @@ function clearModalFields(modalId) {
     if (el.type === 'checkbox') el.checked = false;
     else el.value = el.tagName === 'SELECT' ? el.options[0]?.value || '' : '';
   });
+  modal.querySelectorAll('.rte-editor[contenteditable]').forEach(el => { el.innerHTML = ''; });
   modal.querySelectorAll('.vis-btn').forEach((b,i) => b.classList.toggle('active', i===0));
   modal.querySelectorAll('input[type=hidden]').forEach(h => { if(h.id.startsWith('vis-')) h.value='private'; });
 }
@@ -2802,6 +2873,61 @@ window.toggleNotifications = () => {
   }
 };
 
+// ─── RICH TEXT EDITOR ─────────────────────────────────────────────────
+function buildRTE(fieldId, placeholder, initialHtml) {
+  initialHtml = initialHtml || '';
+  return '<div class="rte-wrap">' +
+    '<div class="rte-toolbar">' +
+      '<button type="button" class="rte-btn" title="Grassetto" onclick="rteCmd('bold','' + fieldId + '')"><b>G</b></button>' +
+      '<button type="button" class="rte-btn" title="Corsivo" onclick="rteCmd('italic','' + fieldId + '')"><i>C</i></button>' +
+      '<button type="button" class="rte-btn" title="Sottolineato" onclick="rteCmd('underline','' + fieldId + '')"><u>S</u></button>' +
+      '<div class="rte-sep"></div>' +
+      '<select class="rte-size-select" title="Dimensione" onchange="rteSize(this,'' + fieldId + '')">' +
+        '<option value="">Dim.</option>' +
+        '<option value="1">Piccolo</option>' +
+        '<option value="3">Normale</option>' +
+        '<option value="5">Grande</option>' +
+        '<option value="7">Molto grande</option>' +
+      '</select>' +
+      '<div class="rte-sep"></div>' +
+      '<input type="color" class="rte-color-input" title="Colore testo" value="#e8d5a3" onchange="rteColor(this.value,'' + fieldId + '')">' +
+      '<div class="rte-sep"></div>' +
+      '<button type="button" class="rte-btn" title="Rimuovi formattazione" onclick="rteClear('' + fieldId + '')">✕fmt</button>' +
+    '</div>' +
+    '<div class="rte-editor" id="' + fieldId + '" contenteditable="true" data-placeholder="' + placeholder + '" onpaste="rtePaste(event)">' + initialHtml + '</div>' +
+  '</div>';
+}
+window.rteCmd = (cmd, id) => {
+  const el = document.getElementById(id);
+  el && el.focus();
+  document.execCommand(cmd, false, null);
+};
+window.rteSize = (sel, id) => {
+  const el = document.getElementById(id);
+  el && el.focus();
+  if (sel.value) document.execCommand('fontSize', false, sel.value);
+  setTimeout(() => { sel.value = ''; }, 10);
+};
+window.rteColor = (color, id) => {
+  const el = document.getElementById(id);
+  el && el.focus();
+  document.execCommand('foreColor', false, color);
+};
+window.rteClear = (id) => {
+  const el = document.getElementById(id);
+  el && el.focus();
+  document.execCommand('removeFormat', false, null);
+};
+window.rtePaste = (e) => {
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+  document.execCommand('insertText', false, text);
+};
+function rteGetHtml(id) {
+  const el = document.getElementById(id);
+  return el ? el.innerHTML : '';
+}
+
 // ─── MODALE LETTURA ────────────────────────────────────────────────────
 const READ_LABELS = {
   title:'Titolo', name:'Nome', synopsis:'Sinossi', content:'Contenuto',
@@ -2826,16 +2952,13 @@ window.openReadModal = (itemJson) => {
   const coll = item._collection || '';
   const vis  = item._source || 'private';
 
-  // Titolo
   document.getElementById('read-modal-title').textContent =
     item.title || item.name || item.charName || '—';
 
-  // Tag visibilità
   const tagEl = document.getElementById('read-modal-tag');
   tagEl.innerHTML = `<span class="card-tag ${vis}">${vis==='shared'?'🌐 Condivisa':'🔒 Privata'}</span>` +
     (coll ? ` <span class="card-tag public">${READ_ICONS[coll]||''} ${coll}</span>` : '');
 
-  // Meta
   const metaParts = [];
   if (item.createdBy) metaParts.push(`✍ ${item.createdBy}`);
   if (item.createdAt?.seconds) {
@@ -2844,35 +2967,29 @@ window.openReadModal = (itemJson) => {
   }
   document.getElementById('read-modal-meta').textContent = metaParts.join(' · ');
 
-  // Corpo — tutti i campi significativi
   const body = document.getElementById('read-modal-body');
-  const priority = ['synopsis','content','desc','notes','abilities','background',
-                    'consequences','stats','abilities'];
+  const priority = ['synopsis','content','desc','notes','abilities','background','consequences','stats'];
   const shown = new Set();
   let html = '';
 
-  // Prima i campi principali nell'ordine giusto
-  for (const key of priority) {
-    if (item[key] && !READ_SKIP.has(key) && !shown.has(key)) {
-      shown.add(key);
-      html += `<div class="read-section">
-        <div class="read-label">${READ_LABELS[key]||key}</div>
-        <div class="read-value">${esc(item[key])}</div>
-      </div>`;
-    }
-  }
-  // Poi tutti gli altri campi non ancora mostrati
-  for (const [key, val] of Object.entries(item)) {
-    if (!val || READ_SKIP.has(key) || shown.has(key) || priority.includes(key)) continue;
-    if (typeof val === 'object') continue;
+  const addSection = (key, val) => {
+    if (!val || READ_SKIP.has(key) || shown.has(key) || typeof val === 'object') return;
     shown.add(key);
-    html += `<div class="read-section">
-      <div class="read-label">${READ_LABELS[key]||key}</div>
-      <div class="read-value">${esc(String(val))}</div>
-    </div>`;
-  }
-  body.innerHTML = html || '<p class="text-muted">Nessun contenuto.</p>';
+    // Determina se il valore è rich text (contiene tag HTML)
+    const isRich = /<[a-z][\s\S]*>/i.test(String(val));
+    const valueHtml = isRich
+      ? `<div class="read-value rich">${val}</div>`
+      : `<div class="read-value">${esc(String(val))}</div>`;
+    html += `<div class="read-section"><div class="read-label">${READ_LABELS[key]||key}</div>${valueHtml}</div>`;
+  };
 
+  for (const key of priority) addSection(key, item[key]);
+  for (const [key, val] of Object.entries(item)) {
+    if (priority.includes(key)) continue;
+    addSection(key, val);
+  }
+
+  body.innerHTML = html || '<p class="text-muted" style="padding:0.5rem 0;">Nessun contenuto.</p>';
   document.getElementById('read-modal-overlay').classList.add('open');
 };
 
@@ -2982,8 +3099,8 @@ function buildEditFields(item, coll) {
         <select class="form-select" id="ef-type">
           ${['main','side','secret','shared'].map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}
         </select></div>
-      <div class="form-group"><label class="form-label">Sinossi</label><textarea class="form-textarea" id="ef-synopsis">${esc(item.synopsis||'')}</textarea></div>
-      <div class="form-group"><label class="form-label">Note interne</label><textarea class="form-textarea" id="ef-notes">${esc(item.notes||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Sinossi</label><div class="rte-editor" id="ef-synopsis" contenteditable="true" onpaste="rtePaste(event)">${item.synopsis||''</div></div>
+      <div class="form-group"><label class="form-label">Note interne</label><div class="rte-editor" id="ef-notes" contenteditable="true" onpaste="rtePaste(event)">${item.notes||''</div></div>
       ${visSwitch}`,
     lore: `
       <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
@@ -2991,7 +3108,7 @@ function buildEditFields(item, coll) {
         <select class="form-select" id="ef-category">
           ${['history','place','religion','politics','other'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
         </select></div>
-      <div class="form-group"><label class="form-label">Contenuto</label><textarea class="form-textarea" id="ef-content" style="min-height:120px;">${esc(item.content||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Contenuto</label><div class="rte-editor" id="ef-content" contenteditable="true" onpaste="rtePaste(event)">${item.content||''</div></div>
       ${visSwitch}`,
     npcs: `
       <div class="form-row">
@@ -3005,7 +3122,7 @@ function buildEditFields(item, coll) {
         <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="ef-race" value="${esc(item.race||'')}"></div>
         <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="ef-npcClass" value="${esc(item.npcClass||'')}"></div>
       </div>
-      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc">${esc(item.desc||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Descrizione</label><div class="rte-editor" id="ef-desc" contenteditable="true" onpaste="rtePaste(event)">${item.desc||''</div></div>
       <div class="form-group"><label class="form-label">Statistiche</label><input class="form-input" id="ef-stats" value="${esc(item.stats||'')}"></div>
       ${visSwitch}`,
     items: `
@@ -3028,7 +3145,7 @@ function buildEditFields(item, coll) {
           </select></div>
       </div>
       <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc">${esc(item.desc||'')}</textarea></div>
-      <div class="form-group"><label class="form-label">Abilità</label><textarea class="form-textarea" id="ef-abilities">${esc(item.abilities||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Abilità</label><div class="rte-editor" id="ef-abilities" contenteditable="true" onpaste="rtePaste(event)">${item.abilities||''</div></div>
       ${visSwitch}`,
     rules: `
       <div class="form-row">
@@ -3038,7 +3155,7 @@ function buildEditFields(item, coll) {
             ${['combat','magic','skills','general'].map(t=>`<option value="${t}" ${item.category===t?'selected':''}>${t}</option>`).join('')}
           </select></div>
       </div>
-      <div class="form-group"><label class="form-label">Descrizione</label><textarea class="form-textarea" id="ef-desc" style="min-height:120px;">${esc(item.desc||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Descrizione</label><div class="rte-editor" id="ef-desc" contenteditable="true" onpaste="rtePaste(event)">${item.desc||''</div></div>
       ${visSwitch}`,
     sessions: `
       <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
@@ -3058,7 +3175,7 @@ function buildEditFields(item, coll) {
         <div class="form-group"><label class="form-label">Livello</label><input class="form-input" type="number" id="ef-level" value="${esc(item.level||'')}"></div>
         <div class="form-group"><label class="form-label">PF Max</label><input class="form-input" type="number" id="ef-hp" value="${esc(item.hp||'')}"></div>
       </div>
-      <div class="form-group"><label class="form-label">Background</label><textarea class="form-textarea" id="ef-background">${esc(item.background||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Background</label><div class="rte-editor" id="ef-background" contenteditable="true" onpaste="rtePaste(event)">${item.background||''</div></div>
       ${visSwitch}`,
     music: `
       <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="ef-title" value="${esc(item.title||'')}"></div>
@@ -3095,7 +3212,7 @@ window.saveEdit = async () => {
   const updates = {};
   document.querySelectorAll('[id^="ef-"]').forEach(el => {
     const key = el.id.replace('ef-','');
-    updates[key] = el.value;
+    updates[key] = el.contentEditable === 'true' ? el.innerHTML : el.value;
   });
   updates.visibility = newVis;
   updates.updatedAt = serverTimestamp();
