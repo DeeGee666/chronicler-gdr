@@ -1514,413 +1514,6 @@ service cloud.firestore {
 
 <!-- ═══ MODALS ══════════════════════════════════════════════════════════════ -->
 
-<!-- SESSIONE -->
-<div class="modal-overlay" id="session-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>⚡</span><div class="modal-title">Nuova Sessione</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('session-modal')">✕</button>
-    </div>
-    <div class="form-group"><label class="form-label">Titolo sessione</label><input class="form-input" id="s-title" placeholder="Es. La Cripta Maledetta"></div>
-    <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="s-date" type="date"></div>
-    <div class="form-group"><label class="form-label">Note pre-sessione</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','s-notes')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','s-notes')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','s-notes')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'s-notes')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'s-notes')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('s-notes')">&#x2715;fmt</button></div><div class="rte-editor" id="s-notes" contenteditable="true" data-placeholder="Preparazione, obiettivi..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-session')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-session')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-session" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('session-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('sessions','session-modal',{title:'s-title',date:'s-date',notes:'s-notes',visibility:'vis-session'})">Crea sessione</button>
-    </div>
-  </div>
-</div>
-
-<!-- EVENTO MONDO -->
-<div class="modal-overlay" id="world-event-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>🌍</span><div class="modal-title">Nuovo Evento Mondo</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('world-event-modal')">✕</button>
-    </div>
-    <p class="text-muted mb-2">Gli eventi mondo sono <strong style="color:var(--shared);">sempre visibili a entrambi i DM</strong> in tempo reale.</p>
-    <div class="form-group"><label class="form-label">Titolo evento</label><input class="form-input" id="we-title" placeholder="Es. Il Vulcano di Morthak è esploso"></div>
-    <div class="form-group">
-      <label class="form-label">Tipo</label>
-      <select class="form-select" id="we-type">
-        <option value="cataclysm">🌋 Cataclisma</option>
-        <option value="trap">🪤 Trappola piazzata</option>
-        <option value="item">💎 Oggetto unico preso</option>
-        <option value="other">🔀 Altro evento</option>
-      </select>
-    </div>
-    <div class="form-group"><label class="form-label">Descrizione (cosa è successo)</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','we-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','we-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','we-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'we-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'we-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('we-desc')">&#x2715;fmt</button></div><div class="rte-editor" id="we-desc" contenteditable="true" data-placeholder="Descrivi l'evento..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group"><label class="form-label">Posizione nel mondo (opzionale)</label><input class="form-input" id="we-location" placeholder="Es. Foresta di Eldrath, settore nord"></div>
-    <div class="form-group"><label class="form-label">Conseguenze per l'altro tavolo</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','we-consequences')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','we-consequences')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','we-consequences')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'we-consequences')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'we-consequences')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('we-consequences')">&#x2715;fmt</button></div><div class="rte-editor" id="we-consequences" contenteditable="true" data-placeholder="Cosa deve sapere l'altro DM?" onpaste="rtePaste(event)"></div></div></div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('world-event-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveWorldEvent()">📡 Pubblica evento</button>
-    </div>
-  </div>
-</div>
-
-<!-- TRAMA -->
-<div class="modal-overlay" id="plot-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>📜</span><div class="modal-title">Nuova Trama</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('plot-modal')">✕</button>
-    </div>
-    <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="p-title" placeholder="Es. Il Ritorno del Re Lich"></div>
-    <div class="form-group"><label class="form-label">Tipo</label>
-      <select class="form-select" id="p-type">
-        <option value="main">Trama principale</option>
-        <option value="side">Sotto-trama</option>
-        <option value="secret">Segreto DM</option>
-        <option value="shared">Trama condivisa</option>
-      </select>
-    </div>
-    <div class="form-group"><label class="form-label">Sinossi</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','p-synopsis')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','p-synopsis')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','p-synopsis')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'p-synopsis')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'p-synopsis')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('p-synopsis')">&#x2715;fmt</button></div><div class="rte-editor" id="p-synopsis" contenteditable="true" data-placeholder="Riassunto della trama..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group"><label class="form-label">Note interne (private)</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','p-notes')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','p-notes')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','p-notes')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'p-notes')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'p-notes')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('p-notes')">&#x2715;fmt</button></div><div class="rte-editor" id="p-notes" contenteditable="true" data-placeholder="Note solo per te..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-plot')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-plot')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-plot" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('plot-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('plots','plot-modal',{title:'p-title',type:'p-type',synopsis:'p-synopsis',notes:'p-notes',visibility:'vis-plot'})">Salva trama</button>
-    </div>
-  </div>
-</div>
-
-<!-- LORE -->
-<div class="modal-overlay" id="lore-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>📖</span><div class="modal-title">Nuova Voce Lore</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('lore-modal')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="l-title" placeholder="Es. La Guerra degli Dei"></div>
-      <div class="form-group"><label class="form-label">Categoria</label>
-        <select class="form-select" id="l-cat">
-          <option value="history">Storia</option>
-          <option value="place">Luogo</option>
-          <option value="religion">Religione</option>
-          <option value="politics">Politica</option>
-          <option value="other">Altro</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label class="form-label">Contenuto</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','l-content')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','l-content')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','l-content')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'l-content')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'l-content')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('l-content')">&#x2715;fmt</button></div><div class="rte-editor" id="l-content" contenteditable="true" data-placeholder="Descrizione dettagliata..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-lore')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-lore')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-lore" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('lore-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('lore','lore-modal',{title:'l-title',category:'l-cat',content:'l-content',visibility:'vis-lore'})">Salva</button>
-    </div>
-  </div>
-</div>
-
-<!-- PNG -->
-<div class="modal-overlay" id="npc-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>🧙</span><div class="modal-title">Nuovo PNG</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('npc-modal')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="n-name" placeholder="Es. Aldric il Saggio"></div>
-      <div class="form-group"><label class="form-label">Ruolo</label>
-        <select class="form-select" id="n-role">
-          <option value="ally">Alleato</option>
-          <option value="enemy">Antagonista</option>
-          <option value="neutral">Neutrale</option>
-          <option value="faction">Fazione</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="n-race" placeholder="Es. Elfo"></div>
-      <div class="form-group"><label class="form-label">Classe / Professione</label><input class="form-input" id="n-class" placeholder="Es. Mago del Consiglio"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Descrizione & Background</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','n-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','n-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','n-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'n-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'n-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('n-desc')">&#x2715;fmt</button></div><div class="rte-editor" id="n-desc" contenteditable="true" data-placeholder="Chi è, cosa vuole, segreti..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group"><label class="form-label">Statistiche (libere)</label><input class="form-input" id="n-stats" placeholder="Es. PF:40, CA:14, ATT:+6"></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-npc')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-npc')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-npc" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('npc-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('npcs','npc-modal',{name:'n-name',role:'n-role',race:'n-race',npcClass:'n-class',desc:'n-desc',stats:'n-stats',visibility:'vis-npc'})">Salva PNG</button>
-    </div>
-  </div>
-</div>
-
-<!-- OGGETTO -->
-<div class="modal-overlay" id="item-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>💎</span><div class="modal-title">Nuovo Oggetto</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('item-modal')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Nome oggetto</label><input class="form-input" id="i-name" placeholder="Es. Spada del Re Caduto"></div>
-      <div class="form-group"><label class="form-label">Rarità</label>
-        <select class="form-select" id="i-rarity">
-          <option value="common">Comune</option>
-          <option value="uncommon">Non comune</option>
-          <option value="rare">Raro</option>
-          <option value="legendary">Leggendario</option>
-          <option value="unique">⚠ Unico (sync realtime)</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label class="form-label">Descrizione & Proprietà</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','i-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','i-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','i-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'i-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'i-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('i-desc')">&#x2715;fmt</button></div><div class="rte-editor" id="i-desc" contenteditable="true" data-placeholder="Effetti, storia, requisiti..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <div class="form-check">
-        <input type="checkbox" id="i-unique" onchange="document.getElementById('i-rarity').value='unique'">
-        <label for="i-unique">⚠ Oggetto unico — notifica l'altro DM quando viene trovato</label>
-      </div>
-    </div>
-    <div class="form-group" id="i-owner-group" style="display:none;">
-      <label class="form-label">Trovato da (giocatore)</label>
-      <input class="form-input" id="i-owner" placeholder="Nome del giocatore che lo ha trovato">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Visibilità scheda</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-item')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-item')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-item" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('item-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveItem()">Salva oggetto</button>
-    </div>
-  </div>
-</div>
-
-<!-- RAZZA -->
-<div class="modal-overlay" id="race-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>🐉</span><div class="modal-title">Nuova Razza / Classe</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('race-modal')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="r-name" placeholder="Es. Mezz'elfo"></div>
-      <div class="form-group"><label class="form-label">Tipo</label>
-        <select class="form-select" id="r-type">
-          <option value="race">Razza</option>
-          <option value="class">Classe</option>
-          <option value="subrace">Sottorazza</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label class="form-label">Descrizione</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','r-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','r-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','r-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'r-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'r-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('r-desc')">&#x2715;fmt</button></div><div class="rte-editor" id="r-desc" contenteditable="true" data-placeholder="Caratteristiche, bonus, storia..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group"><label class="form-label">Abilità razziali / di classe</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','r-abilities')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','r-abilities')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','r-abilities')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'r-abilities')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'r-abilities')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('r-abilities')">&#x2715;fmt</button></div><div class="rte-editor" id="r-abilities" contenteditable="true" data-placeholder="Elenca le abilità..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-race')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-race')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-race" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('race-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('races','race-modal',{name:'r-name',type:'r-type',desc:'r-desc',abilities:'r-abilities',visibility:'vis-race'})">Salva</button>
-    </div>
-  </div>
-</div>
-
-<!-- REGOLA -->
-<div class="modal-overlay" id="rule-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>⚖️</span><div class="modal-title">Nuova Regola</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('rule-modal')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Titolo regola</label><input class="form-input" id="ru-title" placeholder="Es. Tiro critico"></div>
-      <div class="form-group"><label class="form-label">Categoria</label>
-        <select class="form-select" id="ru-cat">
-          <option value="combat">Combattimento</option>
-          <option value="magic">Magia</option>
-          <option value="skills">Abilità</option>
-          <option value="general">Generale</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label class="form-label">Descrizione regola</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','ru-desc')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','ru-desc')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','ru-desc')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'ru-desc')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'ru-desc')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('ru-desc')">&#x2715;fmt</button></div><div class="rte-editor" id="ru-desc" contenteditable="true" data-placeholder="Spiega la regola nel dettaglio..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-rule')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-rule')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-rule" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('rule-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('rules','rule-modal',{title:'ru-title',category:'ru-cat',desc:'ru-desc',visibility:'vis-rule'})">Salva</button>
-    </div>
-  </div>
-</div>
-
-<!-- MAPPA -->
-<div class="modal-overlay" id="map-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>🗺️</span><div class="modal-title">Carica Mappa</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('map-modal')">✕</button>
-    </div>
-    <div class="form-group"><label class="form-label">Nome mappa</label><input class="form-input" id="m-name" placeholder="Es. Regione di Valdor"></div>
-    <div class="form-group"><label class="form-label">Tipo</label>
-      <select class="form-select" id="m-type">
-        <option value="world">Mondo</option>
-        <option value="region">Regione</option>
-        <option value="city">Città</option>
-        <option value="dungeon">Dungeon</option>
-      </select>
-    </div>
-    <div class="form-group"><label class="form-label">File immagine</label><input type="file" class="form-input" id="m-file" accept="image/*"></div>
-    <div class="form-group"><label class="form-label">Note</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','m-notes')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','m-notes')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','m-notes')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'m-notes')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'m-notes')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('m-notes')">&#x2715;fmt</button></div><div class="rte-editor" id="m-notes" contenteditable="true" data-placeholder="Punti di interesse, note..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-map')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-map')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-map" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('map-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveMediaRecord('maps','map-modal','m-file','m-name','m-notes',{type:'m-type',visibility:'vis-map'})">Carica mappa</button>
-    </div>
-  </div>
-</div>
-
-<!-- IMMAGINE -->
-<div class="modal-overlay" id="image-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>🖼️</span><div class="modal-title">Carica Immagine Reference</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('image-modal')">✕</button>
-    </div>
-    <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="img-name" placeholder="Es. Aspetto di Aldric"></div>
-    <div class="form-group"><label class="form-label">Categoria</label>
-      <select class="form-select" id="img-cat">
-        <option value="character">Personaggio</option>
-        <option value="place">Luogo</option>
-        <option value="item">Oggetto</option>
-        <option value="creature">Creatura</option>
-        <option value="other">Altro</option>
-      </select>
-    </div>
-    <div class="form-group"><label class="form-label">File immagine</label><input type="file" class="form-input" id="img-file" accept="image/*"></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-img')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-img')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-img" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('image-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveMediaRecord('images','image-modal','img-file','img-name','',{category:'img-cat',visibility:'vis-img'})">Carica immagine</button>
-    </div>
-  </div>
-</div>
-
-<!-- TRACCIA MUSICALE -->
-<div class="modal-overlay" id="track-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>🎵</span><div class="modal-title">Aggiungi Traccia</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('track-modal')">✕</button>
-    </div>
-    <div class="form-group"><label class="form-label">Titolo traccia</label><input class="form-input" id="t-title" placeholder="Es. Battaglia epica"></div>
-    <div class="form-group"><label class="form-label">Umore</label>
-      <select class="form-select" id="t-mood">
-        <option value="combat">⚔ Combattimento</option>
-        <option value="explore">🧭 Esplorazione</option>
-        <option value="tension">😰 Tensione</option>
-        <option value="ambient">🌿 Ambiente</option>
-      </select>
-    </div>
-    <div class="form-group"><label class="form-label">URL (YouTube / Spotify / SoundCloud)</label><input class="form-input" id="t-url" type="url" placeholder="https://..."></div>
-    <div class="form-group"><label class="form-label">Durata (opzionale)</label><input class="form-input" id="t-duration" placeholder="Es. 3:42"></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-track')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-track')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-track" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('track-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('music','track-modal',{title:'t-title',mood:'t-mood',url:'t-url',duration:'t-duration',visibility:'vis-track'})">Aggiungi traccia</button>
-    </div>
-  </div>
-</div>
-
-<!-- GIOCATORE -->
-<div class="modal-overlay" id="player-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span>👤</span><div class="modal-title">Nuovo Giocatore</div>
-      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('player-modal')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Nome reale</label><input class="form-input" id="pl-real" placeholder="Es. Luca"></div>
-      <div class="form-group"><label class="form-label">Nome personaggio</label><input class="form-input" id="pl-char" placeholder="Es. Theron il Ranger"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="pl-race" placeholder="Es. Elfo"></div>
-      <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="pl-class" placeholder="Es. Ranger"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Livello</label><input class="form-input" id="pl-level" type="number" placeholder="1" min="1"></div>
-      <div class="form-group"><label class="form-label">PF Max</label><input class="form-input" id="pl-hp" type="number" placeholder="20" min="1"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Background & Note</label><div class="rte-wrap"><div class="rte-toolbar"><button type="button" class="rte-btn" onclick="rteCmd('bold','pl-bg')"><b>G</b></button><button type="button" class="rte-btn" onclick="rteCmd('italic','pl-bg')"><i>C</i></button><button type="button" class="rte-btn" onclick="rteCmd('underline','pl-bg')"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" onchange="rteSize(this,'pl-bg')"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'pl-bg')"><div class="rte-sep"></div><button type="button" class="rte-btn" onclick="rteClear('pl-bg')">&#x2715;fmt</button></div><div class="rte-editor" id="pl-bg" contenteditable="true" data-placeholder="Background del personaggio..." onpaste="rtePaste(event)"></div></div></div>
-    <div class="form-group">
-      <label class="form-label">Visibilità</label>
-      <div class="visibility-switch">
-        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-player')">🔒 Privata</button>
-        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-player')">🌐 Condivisa</button>
-      </div>
-      <input type="hidden" id="vis-player" value="private">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('player-modal')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveRecord('players','player-modal',{realName:'pl-real',charName:'pl-char',race:'pl-race',playerClass:'pl-class',level:'pl-level',hp:'pl-hp',background:'pl-bg',visibility:'vis-player'})">Salva giocatore</button>
-    </div>
-  </div>
-</div>
-
 <!-- INIZIATIVA -->
 <div class="modal-overlay" id="init-modal">
   <div class="modal" style="max-width:400px;">
@@ -1974,6 +1567,387 @@ service cloud.firestore {
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('edit-modal')">Annulla</button>
       <button class="btn btn-primary" id="edit-modal-save" onclick="saveEdit()">Salva modifiche</button>
+    </div>
+  </div>
+</div>
+
+<!-- EVENTO MONDO -->
+<div class="modal-overlay" id="world-event-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>🌍</span><div class="modal-title">Nuovo Evento Mondo</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('world-event-modal')">✕</button>
+    </div>
+    <p class="text-muted mb-2">Gli eventi mondo sono <strong style="color:var(--shared);">sempre visibili a entrambi i DM</strong> in tempo reale.</p>
+    <div class="form-group"><label class="form-label">Titolo evento</label><input class="form-input" id="we-title" placeholder="Es. Il Vulcano di Morthak è esploso"></div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="we-type">
+        <option value="cataclysm">🌋 Cataclisma</option>
+        <option value="trap">🪤 Trappola piazzata</option>
+        <option value="item">💎 Oggetto unico preso</option>
+        <option value="other">🔀 Altro evento</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Descrizione (cosa è successo)</label>
+      <div class="rte-wrap" data-rte="we-desc"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="we-desc"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="we-desc"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="we-desc"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="we-desc"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="we-desc" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="we-desc">&#x2715;fmt</button></div><div class="rte-editor" id="we-desc" contenteditable="true" data-placeholder="Descrivi l'evento..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Posizione nel mondo</label><input class="form-input" id="we-location" placeholder="Es. Foresta di Eldrath"></div>
+    <div class="form-group"><label class="form-label">Conseguenze per l'altro tavolo</label>
+      <div class="rte-wrap" data-rte="we-consequences"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="we-consequences"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="we-consequences"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="we-consequences"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="we-consequences"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="we-consequences" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="we-consequences">&#x2715;fmt</button></div><div class="rte-editor" id="we-consequences" contenteditable="true" data-placeholder="Cosa deve sapere l'altro DM?" onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('world-event-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveWorldEvent()">📡 Pubblica evento</button>
+    </div>
+  </div>
+</div>
+
+<!-- SESSIONE CORRETTA -->
+<div class="modal-overlay" id="session-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>⚡</span><div class="modal-title">Nuova Sessione</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('session-modal')">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Titolo sessione</label><input class="form-input" id="s-title" placeholder="Es. La Cripta Maledetta"></div>
+    <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="s-date" type="date"></div>
+    <div class="form-group"><label class="form-label">Note pre-sessione</label>
+      <div class="rte-wrap" data-rte="s-notes2"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="s-notes2"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="s-notes2"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="s-notes2"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="s-notes2"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="s-notes2" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="s-notes2">&#x2715;fmt</button></div><div class="rte-editor" id="s-notes2" contenteditable="true" data-placeholder="Preparazione, obiettivi..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-session')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-session')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-session" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('session-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('sessions','session-modal',{title:'s-title',date:'s-date',notes:'s-notes2',visibility:'vis-session'})">Crea sessione</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRAMA -->
+<div class="modal-overlay" id="plot-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>📜</span><div class="modal-title">Nuova Trama</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('plot-modal')">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="p-title" placeholder="Es. Il Ritorno del Re Lich"></div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="p-type"><option value="main">Trama principale</option><option value="side">Sotto-trama</option><option value="secret">Segreto DM</option><option value="shared">Trama condivisa</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Sinossi</label>
+      <div class="rte-wrap" data-rte="p-synopsis"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="p-synopsis"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="p-synopsis"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="p-synopsis"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="p-synopsis"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="p-synopsis" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="p-synopsis">&#x2715;fmt</button></div><div class="rte-editor" id="p-synopsis" contenteditable="true" data-placeholder="Riassunto della trama..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Note interne (private)</label>
+      <div class="rte-wrap" data-rte="p-notes"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="p-notes"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="p-notes"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="p-notes"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="p-notes"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="p-notes" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="p-notes">&#x2715;fmt</button></div><div class="rte-editor" id="p-notes" contenteditable="true" data-placeholder="Note solo per te..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-plot')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-plot')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-plot" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('plot-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('plots','plot-modal',{title:'p-title',type:'p-type',synopsis:'p-synopsis',notes:'p-notes',visibility:'vis-plot'})">Salva trama</button>
+    </div>
+  </div>
+</div>
+
+<!-- LORE -->
+<div class="modal-overlay" id="lore-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>📖</span><div class="modal-title">Nuova Voce Lore</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('lore-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="l-title" placeholder="Es. La Guerra degli Dei"></div>
+      <div class="form-group"><label class="form-label">Categoria</label>
+        <select class="form-select" id="l-cat"><option value="history">Storia</option><option value="place">Luogo</option><option value="religion">Religione</option><option value="politics">Politica</option><option value="other">Altro</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Contenuto</label>
+      <div class="rte-wrap" data-rte="l-content"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="l-content"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="l-content"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="l-content"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="l-content"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="l-content" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="l-content">&#x2715;fmt</button></div><div class="rte-editor" id="l-content" contenteditable="true" data-placeholder="Descrizione dettagliata..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-lore')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-lore')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-lore" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('lore-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('lore','lore-modal',{title:'l-title',category:'l-cat',content:'l-content',visibility:'vis-lore'})">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- PNG -->
+<div class="modal-overlay" id="npc-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>🧙</span><div class="modal-title">Nuovo PNG</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('npc-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="n-name" placeholder="Es. Aldric il Saggio"></div>
+      <div class="form-group"><label class="form-label">Ruolo</label>
+        <select class="form-select" id="n-role"><option value="ally">Alleato</option><option value="enemy">Antagonista</option><option value="neutral">Neutrale</option><option value="faction">Fazione</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="n-race" placeholder="Es. Elfo"></div>
+      <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="n-class" placeholder="Es. Mago del Consiglio"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Descrizione & Background</label>
+      <div class="rte-wrap" data-rte="n-desc"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="n-desc"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="n-desc"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="n-desc"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="n-desc"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="n-desc" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="n-desc">&#x2715;fmt</button></div><div class="rte-editor" id="n-desc" contenteditable="true" data-placeholder="Chi è, cosa vuole, segreti..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Statistiche</label><input class="form-input" id="n-stats" placeholder="Es. PF:40, CA:14, ATT:+6"></div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-npc')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-npc')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-npc" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('npc-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('npcs','npc-modal',{name:'n-name',role:'n-role',race:'n-race',npcClass:'n-class',desc:'n-desc',stats:'n-stats',visibility:'vis-npc'})">Salva PNG</button>
+    </div>
+  </div>
+</div>
+
+<!-- OGGETTO -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>💎</span><div class="modal-title">Nuovo Oggetto</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('item-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nome oggetto</label><input class="form-input" id="i-name" placeholder="Es. Spada del Re Caduto"></div>
+      <div class="form-group"><label class="form-label">Rarità</label>
+        <select class="form-select" id="i-rarity"><option value="common">Comune</option><option value="uncommon">Non comune</option><option value="rare">Raro</option><option value="legendary">Leggendario</option><option value="unique">⚠ Unico</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Descrizione & Proprietà</label>
+      <div class="rte-wrap" data-rte="i-desc"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="i-desc"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="i-desc"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="i-desc"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="i-desc"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="i-desc" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="i-desc">&#x2715;fmt</button></div><div class="rte-editor" id="i-desc" contenteditable="true" data-placeholder="Effetti, storia, requisiti..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <div class="form-check"><input type="checkbox" id="i-unique"><label for="i-unique">⚠ Oggetto unico — notifica l'altro DM quando trovato</label></div>
+    </div>
+    <div class="form-group" id="i-owner-group" style="display:none;">
+      <label class="form-label">Trovato da</label><input class="form-input" id="i-owner" placeholder="Nome del giocatore">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-item')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-item')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-item" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('item-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveItem()">Salva oggetto</button>
+    </div>
+  </div>
+</div>
+
+<!-- RAZZA -->
+<div class="modal-overlay" id="race-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>🐉</span><div class="modal-title">Nuova Razza / Classe</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('race-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="r-name" placeholder="Es. Mezz'elfo"></div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select class="form-select" id="r-type"><option value="race">Razza</option><option value="class">Classe</option><option value="subrace">Sottorazza</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Descrizione</label>
+      <div class="rte-wrap" data-rte="r-desc"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="r-desc"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="r-desc"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="r-desc"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="r-desc"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="r-desc" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="r-desc">&#x2715;fmt</button></div><div class="rte-editor" id="r-desc" contenteditable="true" data-placeholder="Caratteristiche, bonus, storia..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Abilità razziali / di classe</label>
+      <div class="rte-wrap" data-rte="r-abilities"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="r-abilities"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="r-abilities"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="r-abilities"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="r-abilities"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="r-abilities" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="r-abilities">&#x2715;fmt</button></div><div class="rte-editor" id="r-abilities" contenteditable="true" data-placeholder="Elenca le abilità..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-race')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-race')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-race" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('race-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('races','race-modal',{name:'r-name',type:'r-type',desc:'r-desc',abilities:'r-abilities',visibility:'vis-race'})">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGOLA -->
+<div class="modal-overlay" id="rule-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>⚖️</span><div class="modal-title">Nuova Regola</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('rule-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Titolo regola</label><input class="form-input" id="ru-title" placeholder="Es. Tiro critico"></div>
+      <div class="form-group"><label class="form-label">Categoria</label>
+        <select class="form-select" id="ru-cat"><option value="combat">Combattimento</option><option value="magic">Magia</option><option value="skills">Abilità</option><option value="general">Generale</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Descrizione regola</label>
+      <div class="rte-wrap" data-rte="ru-desc"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="ru-desc"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="ru-desc"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="ru-desc"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="ru-desc"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="ru-desc" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="ru-desc">&#x2715;fmt</button></div><div class="rte-editor" id="ru-desc" contenteditable="true" data-placeholder="Spiega la regola nel dettaglio..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-rule')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-rule')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-rule" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('rule-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('rules','rule-modal',{title:'ru-title',category:'ru-cat',desc:'ru-desc',visibility:'vis-rule'})">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAPPA -->
+<div class="modal-overlay" id="map-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>🗺️</span><div class="modal-title">Carica Mappa</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('map-modal')">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Nome mappa</label><input class="form-input" id="m-name" placeholder="Es. Regione di Valdor"></div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="m-type"><option value="world">Mondo</option><option value="region">Regione</option><option value="city">Città</option><option value="dungeon">Dungeon</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">File immagine</label><input type="file" class="form-input" id="m-file" accept="image/*"></div>
+    <div class="form-group"><label class="form-label">Note</label>
+      <div class="rte-wrap" data-rte="m-notes"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="m-notes"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="m-notes"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="m-notes"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="m-notes"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="m-notes" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="m-notes">&#x2715;fmt</button></div><div class="rte-editor" id="m-notes" contenteditable="true" data-placeholder="Punti di interesse, note..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-map')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-map')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-map" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('map-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveMediaRecord('maps','map-modal','m-file','m-name','m-notes',{type:'m-type',visibility:'vis-map'})">Carica mappa</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMMAGINE -->
+<div class="modal-overlay" id="image-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>🖼️</span><div class="modal-title">Carica Immagine Reference</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('image-modal')">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Titolo</label><input class="form-input" id="img-name" placeholder="Es. Aspetto di Aldric"></div>
+    <div class="form-group"><label class="form-label">Categoria</label>
+      <select class="form-select" id="img-cat"><option value="character">Personaggio</option><option value="place">Luogo</option><option value="item">Oggetto</option><option value="creature">Creatura</option><option value="other">Altro</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">File immagine</label><input type="file" class="form-input" id="img-file" accept="image/*"></div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-img')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-img')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-img" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('image-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveMediaRecord('images','image-modal','img-file','img-name','',{category:'img-cat',visibility:'vis-img'})">Carica immagine</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRACCIA MUSICALE -->
+<div class="modal-overlay" id="track-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>🎵</span><div class="modal-title">Aggiungi Traccia</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('track-modal')">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Titolo traccia</label><input class="form-input" id="t-title" placeholder="Es. Battaglia epica"></div>
+    <div class="form-group"><label class="form-label">Umore</label>
+      <select class="form-select" id="t-mood"><option value="combat">⚔ Combattimento</option><option value="explore">🧭 Esplorazione</option><option value="tension">😰 Tensione</option><option value="ambient">🌿 Ambiente</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">URL (YouTube / Spotify)</label><input class="form-input" id="t-url" type="url" placeholder="https://..."></div>
+    <div class="form-group"><label class="form-label">Durata (opzionale)</label><input class="form-input" id="t-duration" placeholder="Es. 3:42"></div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-track')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-track')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-track" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('track-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('music','track-modal',{title:'t-title',mood:'t-mood',url:'t-url',duration:'t-duration',visibility:'vis-track'})">Aggiungi traccia</button>
+    </div>
+  </div>
+</div>
+
+<!-- GIOCATORE -->
+<div class="modal-overlay" id="player-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>👤</span><div class="modal-title">Nuovo Giocatore</div>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="closeModal('player-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nome reale</label><input class="form-input" id="pl-real" placeholder="Es. Luca"></div>
+      <div class="form-group"><label class="form-label">Nome personaggio</label><input class="form-input" id="pl-char" placeholder="Es. Theron il Ranger"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Razza</label><input class="form-input" id="pl-race" placeholder="Es. Elfo"></div>
+      <div class="form-group"><label class="form-label">Classe</label><input class="form-input" id="pl-class" placeholder="Es. Ranger"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Livello</label><input class="form-input" id="pl-level" type="number" placeholder="1" min="1"></div>
+      <div class="form-group"><label class="form-label">PF Max</label><input class="form-input" id="pl-hp" type="number" placeholder="20" min="1"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Background & Note</label>
+      <div class="rte-wrap" data-rte="pl-bg"><div class="rte-toolbar"><button type="button" class="rte-btn" data-cmd="bold" data-target="pl-bg"><b>G</b></button><button type="button" class="rte-btn" data-cmd="italic" data-target="pl-bg"><i>C</i></button><button type="button" class="rte-btn" data-cmd="underline" data-target="pl-bg"><u>S</u></button><div class="rte-sep"></div><select class="rte-size-select" data-target="pl-bg"><option value="">Dim.</option><option value="1">Piccolo</option><option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option></select><div class="rte-sep"></div><input type="color" class="rte-color-input" data-target="pl-bg" value="#e8d5a3"><div class="rte-sep"></div><button type="button" class="rte-btn rte-clear" data-target="pl-bg">&#x2715;fmt</button></div><div class="rte-editor" id="pl-bg" contenteditable="true" data-placeholder="Background del personaggio..." onpaste="rtePaste(event)"></div></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Visibilità</label>
+      <div class="visibility-switch">
+        <button class="vis-btn active private" data-vis="private" onclick="pickVis(this,'vis-player')">🔒 Privata</button>
+        <button class="vis-btn shared" data-vis="shared" onclick="pickVis(this,'vis-player')">🌐 Condivisa</button>
+      </div>
+      <input type="hidden" id="vis-player" value="private">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('player-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveRecord('players','player-modal',{realName:'pl-real',charName:'pl-char',race:'pl-race',playerClass:'pl-class',level:'pl-level',hp:'pl-hp',background:'pl-bg',visibility:'vis-player'})">Salva giocatore</button>
     </div>
   </div>
 </div>
@@ -3010,14 +2984,36 @@ function loadAccessibilitySettings() {
 }
 
 // ─── RICH TEXT EDITOR ─────────────────────────────────────────────────
+// Gestore delegato: nessun onclick inline, zero problemi di virgolette
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-cmd][data-target]');
+  if (btn) {
+    var el = document.getElementById(btn.dataset.target);
+    if (el) { el.focus(); document.execCommand(btn.dataset.cmd, false, null); }
+    return;
+  }
+  var clr = e.target.closest('.rte-clear[data-target]');
+  if (clr) {
+    var el = document.getElementById(clr.dataset.target);
+    if (el) { el.focus(); document.execCommand('removeFormat', false, null); }
+  }
+});
+document.addEventListener('change', function(e) {
+  var sel = e.target.closest('.rte-size-select[data-target]');
+  if (sel && sel.value) {
+    var el = document.getElementById(sel.dataset.target);
+    if (el) { el.focus(); document.execCommand('fontSize', false, sel.value); }
+    setTimeout(function(){ sel.value = ''; }, 10);
+  }
+  var col = e.target.closest('.rte-color-input[data-target]');
+  if (col) {
+    var el = document.getElementById(col.dataset.target);
+    if (el) { el.focus(); document.execCommand('foreColor', false, col.value); }
+  }
+});
 window.rteCmd = function(cmd, id) {
   var el = document.getElementById(id);
   if (el) { el.focus(); document.execCommand(cmd, false, null); }
-};
-window.rteSize = function(sel, id) {
-  var el = document.getElementById(id);
-  if (el && sel.value) { el.focus(); document.execCommand('fontSize', false, sel.value); }
-  setTimeout(function(){ sel.value = ''; }, 10);
 };
 window.rteColor = function(color, id) {
   var el = document.getElementById(id);
@@ -3071,21 +3067,22 @@ function buildEditFields(item, coll) {
       '</select>';
   }
   function rte(id, val) {
-    return '<div class="rte-wrap">' +
+    var t = id;
+    return '<div class="rte-wrap" data-rte="' + t + '">' +
       '<div class="rte-toolbar">' +
-      '<button type="button" class="rte-btn" onclick="rteCmd('bold','' + id + '')"><b>G</b></button>' +
-      '<button type="button" class="rte-btn" onclick="rteCmd('italic','' + id + '')"><i>C</i></button>' +
-      '<button type="button" class="rte-btn" onclick="rteCmd('underline','' + id + '')"><u>S</u></button>' +
+      '<button type="button" class="rte-btn" data-cmd="bold" data-target="' + t + '"><b>G</b></button>' +
+      '<button type="button" class="rte-btn" data-cmd="italic" data-target="' + t + '"><i>C</i></button>' +
+      '<button type="button" class="rte-btn" data-cmd="underline" data-target="' + t + '"><u>S</u></button>' +
       '<div class="rte-sep"></div>' +
-      '<select class="rte-size-select" onchange="rteSize(this,'' + id + '')">' +
+      '<select class="rte-size-select" data-target="' + t + '">' +
       '<option value="">Dim.</option><option value="1">Piccolo</option>' +
       '<option value="3">Normale</option><option value="5">Grande</option><option value="7">Molto grande</option>' +
       '</select><div class="rte-sep"></div>' +
-      '<input type="color" class="rte-color-input" value="#e8d5a3" onchange="rteColor(this.value,'' + id + '')">' +
+      '<input type="color" class="rte-color-input" data-target="' + t + '" value="#e8d5a3">' +
       '<div class="rte-sep"></div>' +
-      '<button type="button" class="rte-btn" onclick="rteClear('' + id + '')">&#x2715;fmt</button>' +
+      '<button type="button" class="rte-btn rte-clear" data-target="' + t + '">&#x2715;fmt</button>' +
       '</div>' +
-      '<div class="rte-editor" id="' + id + '" contenteditable="true" onpaste="rtePaste(event)">' + (val||'') + '</div>' +
+      '<div class="rte-editor" id="' + t + '" contenteditable="true" onpaste="rtePaste(event)">' + (val||'') + '</div>' +
       '</div>';
   }
   function fg(label, field) { return '<div class="form-group"><label class="form-label">' + label + '</label>' + field + '</div>'; }
