@@ -3057,8 +3057,8 @@ function buildEditFields(item, coll) {
   var vs = vis === 'shared' ? 'active shared' : '';
   var visSwitch = '<div class="form-group"><label class="form-label">Visibilità</label>' +
     '<div class="visibility-switch">' +
-    '<button class="vis-btn ' + vp + '" data-vis="private" onclick="pickVis(this,'edit-vis')">&#x1F512; Privata</button>' +
-    '<button class="vis-btn ' + vs + '" data-vis="shared" onclick="pickVis(this,'edit-vis')">&#x1F310; Condivisa</button>' +
+    '<button class="vis-btn ' + vp + '" data-vis="private" onclick="pickVis(this,\'edit-vis\')">&#x1F512; Privata</button>' +
+    '<button class="vis-btn ' + vs + '" data-vis="shared" onclick="pickVis(this,\'edit-vis\')">&#x1F310; Condivisa</button>' +
     '</div><input type="hidden" id="edit-vis" value="' + vis + '"></div>';
 
   function inp(id, val, type) {
