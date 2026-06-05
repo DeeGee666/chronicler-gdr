@@ -895,6 +895,7 @@ body {
   transition: all var(--transition); line-height: 1.4;
 }
 .rte-btn:hover { background: var(--bg-hover); color: var(--text-pri); border-color: var(--border-hi); }
+.rte-btn.active { background: var(--accent); color: var(--bg-deep); border-color: var(--accent); }
 .rte-sep { width: 1px; background: var(--border); align-self: stretch; margin: 2px 3px; }
 .rte-size-select {
   padding: 0.1rem 0.3rem; font-size: 0.72rem;
@@ -2991,6 +2992,28 @@ function loadAccessibilitySettings() {
 }
 
 // ─── RICH TEXT EDITOR ─────────────────────────────────────────────────
+// Aggiorna lo stato visivo dei bottoni in base alla selezione corrente
+function updateRteButtons(editorEl) {
+  var wrap = editorEl.closest('.rte-wrap');
+  if (!wrap) return;
+  var id = editorEl.id;
+  ['bold','italic','underline'].forEach(function(cmd) {
+    var btn = wrap.querySelector('[data-cmd="' + cmd + '"]');
+    if (!btn) return;
+    try {
+      btn.classList.toggle('active', document.queryCommandState(cmd));
+    } catch(e) {}
+  });
+}
+
+// Ascolta i cambiamenti di selezione per aggiornare i bottoni
+document.addEventListener('selectionchange', function() {
+  var active = document.activeElement;
+  if (active && active.classList.contains('rte-editor')) {
+    updateRteButtons(active);
+  }
+});
+
 // Gestore delegato: nessun onclick inline, zero problemi di virgolette
 document.addEventListener('click', function(e) {
   var btn = e.target.closest('[data-cmd][data-target]');
