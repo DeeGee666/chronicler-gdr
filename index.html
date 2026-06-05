@@ -2597,14 +2597,21 @@ function renderMusic(docs, source) {
       const elId = mood === 'all' ? 'music-list' : `music-${mood}`;
       const el = document.getElementById(elId);
       if (!el) return;
-      el.innerHTML = filtered.length ? filtered.map(t => `
+      el.innerHTML = filtered.length ? filtered.map(t => {
+        t._collection = 'music';
+        const tJson = JSON.stringify(t).replace(/'/g,"&#39;");
+        return `
         <div class="track-item" onclick="openUrl('${esc(t.url)}')">
           <span class="track-icon">🎵</span>
           <span class="track-name">${esc(t.title||'—')}</span>
           <span class="track-duration">${esc(t.duration||'')}</span>
           <span class="card-tag ${t._source === 'shared' ? 'shared' : 'private'}" style="margin:0;">${t._source === 'shared' ? '🌐' : '🔒'}</span>
-          ${t.uid === currentUser?.uid ? `<button class="btn btn-danger btn-sm btn-icon" onclick="event.stopPropagation();deleteRecord('music','${t.id}','${t._source}')">🗑</button>` : ''}
-        </div>`).join('') : '<div class="empty-state"><div class="empty-icon">🎵</div><p>Nessuna traccia.</p></div>';
+          ${t.uid === currentUser?.uid ? `
+            <button class="btn btn-secondary btn-sm btn-icon" title="Modifica" onclick="event.stopPropagation();openEditModal(${tJson})">✏️</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="event.stopPropagation();deleteRecord('music','${t.id}','${t._source}')">🗑</button>
+          ` : ''}
+        </div>`;
+      }).join('') : '<div class="empty-state"><div class="empty-icon">🎵</div><p>Nessuna traccia.</p></div>';
     });
   });
 }
@@ -3121,26 +3128,37 @@ window.saveEdit = async () => {
   updates.updatedAt = serverTimestamp();
   updates.updatedBy = dmName;
 
+  // Pulisce i campi interni che Firestore non accetta
+  function cleanForFirestore(obj) {
+    const clean = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (k === '_source' || k === '_collection' || k === 'id') continue;
+      if (v === undefined) continue;
+      clean[k] = v;
+    }
+    return clean;
+  }
+
   try {
-    // Se la visibilità è cambiata: elimina e ricrea nell'altra collezione
     if (oldVis !== newVis) {
+      // Visibilità cambiata: elimina dalla vecchia collezione e ricrea nella nuova
       const oldRef = doc(db, ...(oldVis === 'shared'
         ? ['shared', coll, 'docs', item.id]
         : ['private', currentUser.uid, coll, item.id]));
       await deleteDoc(oldRef);
-      await addDoc(getCollRef(coll, newVis), {
+      const newData = cleanForFirestore({
         ...item, ...updates,
         createdAt: item.createdAt || serverTimestamp(),
         createdBy: item.createdBy || dmName,
         uid: currentUser.uid,
-        _source: undefined, _collection: undefined
       });
+      await addDoc(getCollRef(coll, newVis), newData);
     } else {
+      // Stessa visibilità: aggiorna in place
       const docRef = doc(db, ...(oldVis === 'shared'
         ? ['shared', coll, 'docs', item.id]
         : ['private', currentUser.uid, coll, item.id]));
-      const { _source, _collection, id, ...cleanItem } = item;
-      await setDoc(docRef, { ...cleanItem, ...updates }, { merge: true });
+      await setDoc(docRef, cleanForFirestore({ ...item, ...updates }), { merge: true });
     }
     closeModal('edit-modal');
     _editItem = null;
