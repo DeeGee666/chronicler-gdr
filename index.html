@@ -975,15 +975,17 @@ body {
 /* ═══ DRAG & DROP ════════════════════════════════════════════════════════════ */
 .card[draggable="true"] { cursor: grab; }
 .card[draggable="true"]:active { cursor: grabbing; }
-.card.drag-over {
-  border-color: var(--accent);
-  background: var(--accent-glow);
+.card.drag-over, .draggable-item.drag-over, .track-item.drag-over {
+  border-color: var(--accent) !important;
+  background: var(--accent-glow) !important;
   transform: scale(1.01);
 }
-.card.dragging {
+.card.dragging, .draggable-item.dragging, .track-item.dragging {
   opacity: 0.4;
   transform: scale(0.98);
 }
+.draggable-item { cursor: default; }
+.track-item.draggable-item { cursor: default; }
 .drag-handle {
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -2617,7 +2619,7 @@ function renderMusic(docs, source) {
   mergeAndRender('music', docs, source, all => {
     const moods = ['all','combat','explore','tension','ambient'];
     moods.forEach(mood => {
-      const filtered = mood === 'all' ? all : all.filter(t => t.mood === mood);
+      const filtered = mood === 'all' ? applyDragOrder(all,'music') : applyDragOrder(all.filter(t => t.mood === mood),'music-'+mood);
       const elId = mood === 'all' ? 'music-list' : `music-${mood}`;
       const el = document.getElementById(elId);
       if (!el) return;
@@ -2625,17 +2627,20 @@ function renderMusic(docs, source) {
         t._collection = 'music';
         const tJson = JSON.stringify(t).replace(/'/g,"&#39;");
         return `
-        <div class="track-item" onclick="openUrl('${esc(t.url)}')">
-          <span class="track-icon">🎵</span>
-          <span class="track-name">${esc(t.title||'—')}</span>
+        <div class="track-item draggable-item" draggable="true" data-id="${t.id}">
+          <span class="drag-handle" title="Trascina per riordinare">⠿</span>
+          <span class="track-icon" style="cursor:pointer;" onclick="openUrl('${esc(t.url)}')">🎵</span>
+          <span class="track-name" style="cursor:pointer;" onclick="openUrl('${esc(t.url)}')">${esc(t.title||'—')}</span>
           <span class="track-duration">${esc(t.duration||'')}</span>
           <span class="card-tag ${t._source === 'shared' ? 'shared' : 'private'}" style="margin:0;">${t._source === 'shared' ? '🌐' : '🔒'}</span>
           ${t.uid === currentUser?.uid ? `
-            <button class="btn btn-secondary btn-sm btn-icon" title="Modifica" onclick="event.stopPropagation();openEditModal(${tJson})">✏️</button>
-            <button class="btn btn-danger btn-sm btn-icon" onclick="event.stopPropagation();deleteRecord('music','${t.id}','${t._source}')">🗑</button>
+            <button class="btn btn-secondary btn-sm btn-icon" title="Modifica" onclick="openEditModal(${tJson})">✏️</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRecord('music','${t.id}','${t._source}')">🗑</button>
           ` : ''}
         </div>`;
       }).join('') : '<div class="empty-state"><div class="empty-icon">🎵</div><p>Nessuna traccia.</p></div>';
+      const collKey = mood === 'all' ? 'music' : 'music-'+mood;
+      initDragDropList(el, collKey, '.draggable-item');
     });
   });
 }
@@ -2643,44 +2648,56 @@ function renderMaps(docs, source) {
   mergeAndRender('maps', docs, source, all => {
     const el = document.getElementById('maps-list');
     if (!el) return;
-    el.innerHTML = all.length ? all.map(m => {
+    const sorted = applyDragOrder(all, 'maps');
+    el.innerHTML = sorted.length ? sorted.map(m => {
       m._collection = 'maps';
       const isMine = m.uid === currentUser?.uid;
       const mJson = JSON.stringify(m).replace(/'/g,"&#39;");
       return `
-        <div style="display:flex;flex-direction:column;gap:0;">
+        <div class="draggable-item" draggable="true" data-id="${m.id}" style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;gap:0.3rem;align-items:center;padding:0.2rem 0.3rem 0;">
+            <span class="drag-handle" title="Trascina per riordinare">⠿</span>
+            <span class="card-tag ${m._source==='shared'?'shared':'private'}" style="margin:0;font-size:0.6rem;">${m._source==='shared'?'🌐':'🔒'}</span>
+          </div>
           <div class="map-thumb" onclick="openLightbox('${esc(m.url)}','${esc(m.name)}')">
             ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🗺️</span>'}
-            <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
+            <div class="map-label">${esc(m.name||'—')}</div>
           </div>
-          ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.4rem 0;">
-            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${mJson})'>✏️ Rinomina</button>
+          ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.3rem 0;">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${mJson})'>✏️ Modifica</button>
             <button class="btn btn-danger btn-sm" onclick="deleteRecord('maps','${m.id}','${m._source}')">🗑</button>
           </div>` : ''}
         </div>`;
     }).join('') : '<div class="empty-state"><div class="empty-icon">🗺️</div><p>Nessuna mappa.</p></div>';
+    initDragDropList(el, 'maps', '.draggable-item');
   });
 }
 function renderImages(docs, source) {
   mergeAndRender('images', docs, source, all => {
     const el = document.getElementById('images-list');
     if (!el) return;
-    el.innerHTML = all.length ? all.map(m => {
+    const sorted = applyDragOrder(all, 'images');
+    el.innerHTML = sorted.length ? sorted.map(m => {
       m._collection = 'images';
       const isMine = m.uid === currentUser?.uid;
       const mJson = JSON.stringify(m).replace(/'/g,"&#39;");
       return `
-        <div style="display:flex;flex-direction:column;gap:0;">
+        <div class="draggable-item" draggable="true" data-id="${m.id}" style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;gap:0.3rem;align-items:center;padding:0.2rem 0.3rem 0;">
+            <span class="drag-handle" title="Trascina per riordinare">⠿</span>
+            <span class="card-tag ${m._source==='shared'?'shared':'private'}" style="margin:0;font-size:0.6rem;">${m._source==='shared'?'🌐':'🔒'}</span>
+          </div>
           <div class="map-thumb" onclick="openLightbox('${esc(m.url)}','${esc(m.name)}')">
             ${m.url ? `<img src="${esc(m.url)}" alt="${esc(m.name)}">` : '<span class="map-placeholder">🖼️</span>'}
-            <div class="map-label">${esc(m.name||'—')} ${m._source==='shared'?'🌐':'🔒'}</div>
+            <div class="map-label">${esc(m.name||'—')}</div>
           </div>
-          ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.4rem 0;">
-            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${mJson})'>✏️ Rinomina</button>
+          ${isMine ? `<div style="display:flex;gap:0.4rem;padding:0.3rem 0;">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick='openEditModal(${mJson})'>✏️ Modifica</button>
             <button class="btn btn-danger btn-sm" onclick="deleteRecord('images','${m.id}','${m._source}')">🗑</button>
           </div>` : ''}
         </div>`;
     }).join('') : '<div class="empty-state"><div class="empty-icon">🖼️</div><p>Nessuna immagine.</p></div>';
+    initDragDropList(el, 'images', '.draggable-item');
   });
 }
 
@@ -2757,56 +2774,70 @@ function applyDragOrder(docs, collName) {
 let _dragSrcEl = null;
 let _dragCollName = null;
 
-function initDragDrop(container, collName) {
-  if (container._dragInited) return;
-  container._dragInited = true;
-  container.addEventListener('dragstart', e => {
-    const card = e.target.closest('.card[draggable]');
-    if (!card) return;
-    _dragSrcEl = card;
-    _dragCollName = collName;
-    card.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-  });
-  container.addEventListener('dragend', () => {
-    container.querySelectorAll('.card').forEach(c => c.classList.remove('dragging','drag-over'));
-    _dragSrcEl = null;
-  });
-  container.addEventListener('dragover', e => {
-    e.preventDefault();
-    const card = e.target.closest('.card[draggable]');
-    if (!card || card === _dragSrcEl) return;
-    container.querySelectorAll('.card').forEach(c => c.classList.remove('drag-over'));
-    card.classList.add('drag-over');
-    e.dataTransfer.dropEffect = 'move';
-  });
-  container.addEventListener('dragleave', e => {
-    const card = e.target.closest('.card[draggable]');
-    if (card) card.classList.remove('drag-over');
-  });
-  container.addEventListener('drop', e => {
-    e.preventDefault();
-    const targetCard = e.target.closest('.card[draggable]');
-    if (!targetCard || targetCard === _dragSrcEl || _dragCollName !== collName) return;
-    targetCard.classList.remove('drag-over');
-    const cards = Array.from(container.querySelectorAll('.card[draggable]'));
-    const srcIdx = cards.indexOf(_dragSrcEl);
-    const tgtIdx = cards.indexOf(targetCard);
-    if (srcIdx < tgtIdx) targetCard.after(_dragSrcEl);
-    else targetCard.before(_dragSrcEl);
-    const newOrder = Array.from(container.querySelectorAll('.card[draggable]')).map(c => c.dataset.id);
-    saveDragOrder(collName, newOrder);
-    toast('Ordine salvato', 'success');
-  });
+// Funzione generica che funziona su qualsiasi elemento draggable
+function initDragDropList(container, collName, itemSelector) {
+  itemSelector = itemSelector || '[draggable="true"]';
+  // Rimuove vecchi listener sostituendo i singoli handler
+  const key = '_drag_' + collName;
+  if (container[key]) {
+    container.removeEventListener('dragstart', container[key].start);
+    container.removeEventListener('dragend',   container[key].end);
+    container.removeEventListener('dragover',  container[key].over);
+    container.removeEventListener('dragleave', container[key].leave);
+    container.removeEventListener('drop',      container[key].drop);
+  }
+  const handlers = {
+    start: e => {
+      const item = e.target.closest(itemSelector);
+      if (!item) return;
+      _dragSrcEl = item;
+      _dragCollName = collName;
+      setTimeout(() => item.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+    },
+    end: () => {
+      container.querySelectorAll(itemSelector).forEach(c => c.classList.remove('dragging','drag-over'));
+      _dragSrcEl = null;
+    },
+    over: e => {
+      e.preventDefault();
+      const item = e.target.closest(itemSelector);
+      if (!item || item === _dragSrcEl) return;
+      container.querySelectorAll(itemSelector).forEach(c => c.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+      e.dataTransfer.dropEffect = 'move';
+    },
+    leave: e => {
+      if (!container.contains(e.relatedTarget))
+        container.querySelectorAll(itemSelector).forEach(c => c.classList.remove('drag-over'));
+    },
+    drop: e => {
+      e.preventDefault();
+      const targetItem = e.target.closest(itemSelector);
+      if (!targetItem || targetItem === _dragSrcEl || _dragCollName !== collName) return;
+      targetItem.classList.remove('drag-over');
+      const items = Array.from(container.querySelectorAll(itemSelector));
+      const srcIdx = items.indexOf(_dragSrcEl);
+      const tgtIdx = items.indexOf(targetItem);
+      if (srcIdx < tgtIdx) targetItem.after(_dragSrcEl);
+      else targetItem.before(_dragSrcEl);
+      const newOrder = Array.from(container.querySelectorAll(itemSelector))
+        .map(c => c.dataset.id).filter(Boolean);
+      saveDragOrder(collName, newOrder);
+      toast('Ordine salvato', 'success');
+    }
+  };
+  container[key] = handlers;
+  container.addEventListener('dragstart', handlers.start);
+  container.addEventListener('dragend',   handlers.end);
+  container.addEventListener('dragover',  handlers.over);
+  container.addEventListener('dragleave', handlers.leave);
+  container.addEventListener('drop',      handlers.drop);
 }
 
-function initAllDragDrop() {
-  [['plots-list','plots'],['lore-list','lore'],['npcs-list','npcs'],
-   ['items-list','items'],['races-list','races'],['rules-list','rules'],
-   ['players-list','players']].forEach(([elId, coll]) => {
-    const el = document.getElementById(elId);
-    if (el) initDragDrop(el, coll);
-  });
+// Alias per renderGeneric (usa le card)
+function initDragDrop(container, collName) {
+  initDragDropList(container, collName, '.card[draggable]');
 }
 
 window.navigate = (page, el) => {
