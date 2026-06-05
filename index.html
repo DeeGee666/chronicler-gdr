@@ -1312,6 +1312,13 @@ service cloud.firestore {
             <button class="btn btn-primary" onclick="openModal('plot-modal')">+ Nuova trama</button>
           </div>
         </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button class="btn btn-secondary btn-sm plot-filter-btn active" onclick="filterPlots('all',this)">Tutte</button>
+          <button class="btn btn-secondary btn-sm plot-filter-btn" onclick="filterPlots('main',this)">Principale</button>
+          <button class="btn btn-secondary btn-sm plot-filter-btn" onclick="filterPlots('side',this)">Sotto-trama</button>
+          <button class="btn btn-secondary btn-sm plot-filter-btn" onclick="filterPlots('secret',this)">Segreto DM</button>
+          <button class="btn btn-secondary btn-sm plot-filter-btn" onclick="filterPlots('shared',this)">Condivisa</button>
+        </div>
         <div class="grid grid-2" id="plots-list">
           <div class="loading"><div class="spinner"></div> Caricamento...</div>
         </div>
@@ -1325,6 +1332,14 @@ service cloud.firestore {
             <button class="btn btn-primary" onclick="openModal('lore-modal')">+ Nuova voce</button>
           </div>
         </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button class="btn btn-secondary btn-sm lore-filter-btn active" onclick="filterLore('all',this)">Tutte</button>
+          <button class="btn btn-secondary btn-sm lore-filter-btn" onclick="filterLore('history',this)">Storia</button>
+          <button class="btn btn-secondary btn-sm lore-filter-btn" onclick="filterLore('place',this)">Luogo</button>
+          <button class="btn btn-secondary btn-sm lore-filter-btn" onclick="filterLore('religion',this)">Religione</button>
+          <button class="btn btn-secondary btn-sm lore-filter-btn" onclick="filterLore('politics',this)">Politica</button>
+          <button class="btn btn-secondary btn-sm lore-filter-btn" onclick="filterLore('other',this)">Altro</button>
+        </div>
         <div class="grid grid-2" id="lore-list">
           <div class="loading"><div class="spinner"></div> Caricamento...</div>
         </div>
@@ -1337,6 +1352,13 @@ service cloud.firestore {
           <div class="actions">
             <button class="btn btn-primary" onclick="openModal('npc-modal')">+ Nuovo PNG</button>
           </div>
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button class="btn btn-secondary btn-sm npc-filter-btn active" onclick="filterNpcs('all',this)">Tutti</button>
+          <button class="btn btn-secondary btn-sm npc-filter-btn" onclick="filterNpcs('ally',this)">Alleati</button>
+          <button class="btn btn-secondary btn-sm npc-filter-btn" onclick="filterNpcs('enemy',this)">Antagonisti</button>
+          <button class="btn btn-secondary btn-sm npc-filter-btn" onclick="filterNpcs('neutral',this)">Neutrali</button>
+          <button class="btn btn-secondary btn-sm npc-filter-btn" onclick="filterNpcs('faction',this)">Fazioni</button>
         </div>
         <div class="grid grid-2" id="npcs-list">
           <div class="loading"><div class="spinner"></div> Caricamento...</div>
@@ -1371,6 +1393,12 @@ service cloud.firestore {
           <div class="actions">
             <button class="btn btn-primary" onclick="openModal('race-modal')">+ Nuova razza</button>
           </div>
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button class="btn btn-secondary btn-sm race-filter-btn active" onclick="filterRaces('all',this)">Tutte</button>
+          <button class="btn btn-secondary btn-sm race-filter-btn" onclick="filterRaces('race',this)">Razze</button>
+          <button class="btn btn-secondary btn-sm race-filter-btn" onclick="filterRaces('class',this)">Classi</button>
+          <button class="btn btn-secondary btn-sm race-filter-btn" onclick="filterRaces('subrace',this)">Sottorazze</button>
         </div>
         <div class="grid grid-3" id="races-list">
           <div class="loading"><div class="spinner"></div> Caricamento...</div>
@@ -2566,17 +2594,30 @@ function renderSessions(docs, source) {
     document.getElementById('stat-sessions').textContent = all.length;
   });
 }
+let _allPlots=[], _allLore=[], _allNpcs=[], _allRaces=[];
+window._plotFilter='all'; window._loreFilter='all'; window._npcFilter='all'; window._raceFilter='all';
+
+function makeFilterFn(cls, varName, listVar, renderFn) {
+  return function(val, btn) {
+    window[varName] = val;
+    document.querySelectorAll('.' + cls).forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderFn(window[listVar]);
+  };
+}
+window.filterPlots = makeFilterFn('plot-filter-btn','_plotFilter','_allPlots', function(all){ renderGeneric(all.filter(d=>window._plotFilter==='all'||d.type===window._plotFilter), 'plots-list', ['type'], 'title', 'synopsis', 'plots'); });
+window.filterLore  = makeFilterFn('lore-filter-btn','_loreFilter','_allLore',  function(all){ renderGeneric(all.filter(d=>window._loreFilter==='all'||d.category===window._loreFilter), 'lore-list', ['category'], 'title', 'content', 'lore'); });
+window.filterNpcs  = makeFilterFn('npc-filter-btn', '_npcFilter', '_allNpcs',  function(all){ renderGeneric(all.filter(d=>window._npcFilter==='all'||d.role===window._npcFilter), 'npcs-list', ['role','race'], 'name', 'desc', 'npcs'); document.getElementById('stat-npcs').textContent = all.length; });
+window.filterRaces = makeFilterFn('race-filter-btn','_raceFilter','_allRaces', function(all){ renderGeneric(all.filter(d=>window._raceFilter==='all'||d.type===window._raceFilter), 'races-list', ['type'], 'name', 'desc', 'races'); });
+
 function renderPlots(docs, source) {
-  mergeAndRender('plots', docs, source, all => renderGeneric(all, 'plots-list', ['type'], 'title', 'synopsis', 'plots'));
+  mergeAndRender('plots', docs, source, all => { _allPlots = all; window.filterPlots(window._plotFilter); });
 }
 function renderLore(docs, source) {
-  mergeAndRender('lore', docs, source, all => renderGeneric(all, 'lore-list', ['category'], 'title', 'content', 'lore'));
+  mergeAndRender('lore', docs, source, all => { _allLore = all; window.filterLore(window._loreFilter); });
 }
 function renderNpcs(docs, source) {
-  mergeAndRender('npcs', docs, source, all => {
-    renderGeneric(all, 'npcs-list', ['role','race'], 'name', 'desc', 'npcs');
-    document.getElementById('stat-npcs').textContent = all.length;
-  });
+  mergeAndRender('npcs', docs, source, all => { _allNpcs = all; window.filterNpcs(window._npcFilter); document.getElementById('stat-npcs').textContent = all.length; });
 }
 let _allItems = [];
 window._itemRarityFilter = 'all';
@@ -2646,7 +2687,7 @@ function renderItems(docs, source) {
   });
 }
 function renderRaces(docs, source) {
-  mergeAndRender('races', docs, source, all => renderGeneric(all, 'races-list', ['type'], 'name', 'desc', 'races'));
+  mergeAndRender('races', docs, source, all => { _allRaces = all; window.filterRaces(window._raceFilter); });
 }
 function renderRules(docs, source) {
   mergeAndRender('rules', docs, source, all => renderGeneric(all, 'rules-list', ['category'], 'title', 'desc', 'rules'));
@@ -2702,7 +2743,8 @@ function renderMusic(docs, source) {
       if (!el) return;
       el.innerHTML = filtered.length ? filtered.map(t => {
         t._collection = 'music';
-        const tJson = JSON.stringify(t).replace(/'/g,"&#39;");
+        const tWithColl = Object.assign({}, t, {_collection: 'music'});
+        const tJson = JSON.stringify(tWithColl).replace(/'/g,"&#39;");
         return `
         <div class="track-item draggable-item" draggable="true" data-id="${t.id}">
           <span class="drag-handle" title="Trascina per riordinare">⠿</span>
@@ -3448,6 +3490,10 @@ window.applyLineHeight = window.applyLineHeight;
 window.setSidebarWidth = window.setSidebarWidth;
 window.resetAccessibility = window.resetAccessibility;
 window.filterItems = window.filterItems;
+window.filterPlots = window.filterPlots;
+window.filterLore  = window.filterLore;
+window.filterNpcs  = window.filterNpcs;
+window.filterRaces = window.filterRaces;
 </script>
 </body>
 </html>
