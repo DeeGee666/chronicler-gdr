@@ -2594,30 +2594,63 @@ function renderSessions(docs, source) {
     document.getElementById('stat-sessions').textContent = all.length;
   });
 }
-let _allPlots=[], _allLore=[], _allNpcs=[], _allRaces=[];
-window._plotFilter='all'; window._loreFilter='all'; window._npcFilter='all'; window._raceFilter='all';
+// Stato filtri e dati cached per sezioni con filtro
+const _filterState = {
+  plots: { filter:'all', data:[] },
+  lore:  { filter:'all', data:[] },
+  npcs:  { filter:'all', data:[] },
+  races: { filter:'all', data:[] },
+};
 
-function makeFilterFn(cls, varName, listVar, renderFn) {
-  return function(val, btn) {
-    window[varName] = val;
-    document.querySelectorAll('.' + cls).forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    renderFn(window[listVar]);
-  };
+function applyFilter(section, val, btn, cls) {
+  _filterState[section].filter = val;
+  document.querySelectorAll('.' + cls).forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderFiltered(section);
 }
-window.filterPlots = makeFilterFn('plot-filter-btn','_plotFilter','_allPlots', function(all){ renderGeneric(all.filter(d=>window._plotFilter==='all'||d.type===window._plotFilter), 'plots-list', ['type'], 'title', 'synopsis', 'plots'); });
-window.filterLore  = makeFilterFn('lore-filter-btn','_loreFilter','_allLore',  function(all){ renderGeneric(all.filter(d=>window._loreFilter==='all'||d.category===window._loreFilter), 'lore-list', ['category'], 'title', 'content', 'lore'); });
-window.filterNpcs  = makeFilterFn('npc-filter-btn', '_npcFilter', '_allNpcs',  function(all){ renderGeneric(all.filter(d=>window._npcFilter==='all'||d.role===window._npcFilter), 'npcs-list', ['role','race'], 'name', 'desc', 'npcs'); document.getElementById('stat-npcs').textContent = all.length; });
-window.filterRaces = makeFilterFn('race-filter-btn','_raceFilter','_allRaces', function(all){ renderGeneric(all.filter(d=>window._raceFilter==='all'||d.type===window._raceFilter), 'races-list', ['type'], 'name', 'desc', 'races'); });
+
+function renderFiltered(section) {
+  const s = _filterState[section];
+  const all = s.data;
+  switch(section) {
+    case 'plots':
+      renderGeneric(all.filter(d => s.filter==='all' || d.type===s.filter),
+        'plots-list', ['type'], 'title', 'synopsis', 'plots'); break;
+    case 'lore':
+      renderGeneric(all.filter(d => s.filter==='all' || d.category===s.filter),
+        'lore-list', ['category'], 'title', 'content', 'lore'); break;
+    case 'npcs':
+      renderGeneric(all.filter(d => s.filter==='all' || d.role===s.filter),
+        'npcs-list', ['role','race'], 'name', 'desc', 'npcs');
+      document.getElementById('stat-npcs').textContent = all.length; break;
+    case 'races':
+      renderGeneric(all.filter(d => s.filter==='all' || d.type===s.filter),
+        'races-list', ['type'], 'name', 'desc', 'races'); break;
+  }
+}
+
+window.filterPlots = (val, btn) => applyFilter('plots', val, btn, 'plot-filter-btn');
+window.filterLore  = (val, btn) => applyFilter('lore',  val, btn, 'lore-filter-btn');
+window.filterNpcs  = (val, btn) => applyFilter('npcs',  val, btn, 'npc-filter-btn');
+window.filterRaces = (val, btn) => applyFilter('races', val, btn, 'race-filter-btn');
 
 function renderPlots(docs, source) {
-  mergeAndRender('plots', docs, source, all => { _allPlots = all; window.filterPlots(window._plotFilter); });
+  mergeAndRender('plots', docs, source, all => {
+    _filterState.plots.data = all;
+    renderFiltered('plots');
+  });
 }
 function renderLore(docs, source) {
-  mergeAndRender('lore', docs, source, all => { _allLore = all; window.filterLore(window._loreFilter); });
+  mergeAndRender('lore', docs, source, all => {
+    _filterState.lore.data = all;
+    renderFiltered('lore');
+  });
 }
 function renderNpcs(docs, source) {
-  mergeAndRender('npcs', docs, source, all => { _allNpcs = all; window.filterNpcs(window._npcFilter); document.getElementById('stat-npcs').textContent = all.length; });
+  mergeAndRender('npcs', docs, source, all => {
+    _filterState.npcs.data = all;
+    renderFiltered('npcs');
+  });
 }
 let _allItems = [];
 window._itemRarityFilter = 'all';
@@ -2687,7 +2720,10 @@ function renderItems(docs, source) {
   });
 }
 function renderRaces(docs, source) {
-  mergeAndRender('races', docs, source, all => { _allRaces = all; window.filterRaces(window._raceFilter); });
+  mergeAndRender('races', docs, source, all => {
+    _filterState.races.data = all;
+    renderFiltered('races');
+  });
 }
 function renderRules(docs, source) {
   mergeAndRender('rules', docs, source, all => renderGeneric(all, 'rules-list', ['category'], 'title', 'desc', 'rules'));
@@ -2753,7 +2789,6 @@ function renderMusic(docs, source) {
           <span class="track-duration">${esc(t.duration||'')}</span>
           <span class="card-tag ${t._source === 'shared' ? 'shared' : 'private'}" style="margin:0;">${t._source === 'shared' ? '🌐' : '🔒'}</span>
           ${t.uid === currentUser?.uid ? `
-            <button class="btn btn-secondary btn-sm btn-icon" title="Modifica" onclick="(function(e){e.stopPropagation();openEditModal(${tJson});})(event)">✏️</button>
             <button class="btn btn-danger btn-sm btn-icon" onclick="(function(e){e.stopPropagation();deleteRecord('music','${t.id}','${t._source}');})(event)">🗑</button>
           ` : ''}
         </div>`;
