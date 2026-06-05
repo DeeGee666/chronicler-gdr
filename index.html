@@ -1351,6 +1351,14 @@ service cloud.firestore {
             <button class="btn btn-primary" onclick="openModal('item-modal')">+ Nuovo oggetto</button>
           </div>
         </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button class="btn btn-secondary btn-sm item-filter-btn active" onclick="filterItems('all',this)">Tutti</button>
+          <button class="btn btn-secondary btn-sm item-filter-btn" onclick="filterItems('common',this)">Comune</button>
+          <button class="btn btn-secondary btn-sm item-filter-btn" onclick="filterItems('uncommon',this)">Non comune</button>
+          <button class="btn btn-secondary btn-sm item-filter-btn" onclick="filterItems('rare',this)">Raro</button>
+          <button class="btn btn-secondary btn-sm item-filter-btn" onclick="filterItems('legendary',this)">Leggendario</button>
+          <button class="btn btn-secondary btn-sm item-filter-btn" style="border-color:var(--danger);color:var(--danger);" onclick="filterItems('unique',this)">⚠ Unici</button>
+        </div>
         <div class="grid grid-2" id="items-list">
           <div class="loading"><div class="spinner"></div> Caricamento...</div>
         </div>
@@ -2526,11 +2534,30 @@ function renderGeneric(docs, containerId, extraFields=[], titleField='title', bo
   const el = document.getElementById(containerId);
   if (!el) return;
   const withColl = docs.map(d => Object.assign({}, d, {_collection: collName}));
+  // Applica ordine drag (prima i nuovi elementi non ancora nell'ordine)
   const sorted = applyDragOrder(withColl, collName);
-  el.innerHTML = sorted.length
+  const newHtml = sorted.length
     ? sorted.map(d => cardHtml(d, extraFields, titleField, bodyField)).join('')
     : '<div class="empty-state"><div class="empty-icon">📭</div><p>Nessun elemento. Aggiungine uno!</p></div>';
-  if (collName) initDragDrop(el, collName);
+  // Aggiorna solo se il contenuto è cambiato, preservando l'ordine DOM già impostato dall'utente
+  const existingIds = Array.from(el.querySelectorAll('.card[data-id]')).map(c => c.dataset.id);
+  const newIds = sorted.map(d => d.id);
+  const sameIds = existingIds.length === newIds.length && existingIds.every((id,i) => id === newIds[i]);
+  if (!sameIds) {
+    el.innerHTML = newHtml;
+    if (collName) initDragDrop(el, collName);
+  } else {
+    // Aggiorna solo il contenuto delle card senza riordinare
+    sorted.forEach(d => {
+      const card = el.querySelector('.card[data-id="' + d.id + '"]');
+      if (card) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = cardHtml(d, extraFields, titleField, bodyField);
+        const newCard = tmp.firstElementChild;
+        if (card.outerHTML !== newCard.outerHTML) card.replaceWith(newCard);
+      }
+    });
+  }
 }
 
 function renderSessions(docs, source) {
@@ -2551,35 +2578,70 @@ function renderNpcs(docs, source) {
     document.getElementById('stat-npcs').textContent = all.length;
   });
 }
+let _allItems = [];
+window._itemRarityFilter = 'all';
+window.filterItems = function(rarity, btn) {
+  window._itemRarityFilter = rarity;
+  document.querySelectorAll('.item-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderItemsList(_allItems);
+};
+
+function itemCardHtml(item) {
+  item._collection = 'items';
+  const vis = item._source === 'shared' ? 'shared' : 'private';
+  const itemJson = JSON.stringify(item).replace(/'/g,"&#39;");
+  const isMine = item.uid === currentUser?.uid;
+  const preview = stripHtml(item.desc||'');
+  return `
+    <div class="card" draggable="true" data-id="${item.id}">
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;align-items:center;">
+        <span class="drag-handle" title="Trascina per riordinare">⠿</span>
+        <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
+        ${item.isUnique ? '<div class="card-tag danger-tag">⚠ Unico</div>' : ''}
+        <div class="card-tag event">${esc(item.rarity||'')}</div>
+      </div>
+      <div class="card-title">${esc(item.name || '—')}</div>
+      <div class="card-body">${esc(preview.substring(0,180))}${preview.length>180?'<span style="color:var(--text-muted);">… <em>clicca Leggi</em></span>':''}</div>
+      <div class="card-meta">
+        ${item.owner ? `<span>👤 Trovato da: ${esc(item.owner)}</span>` : ''}
+        <span>✍ ${esc(item.createdBy || '')}</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-secondary btn-sm" onclick='openReadModal(${itemJson})'>📖 Leggi</button>
+        ${isMine ? `<button class="btn btn-secondary btn-sm" onclick='openEditModal(${itemJson})'>✏️ Modifica</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRecord('items','${item.id}','${item._source}')">🗑 Elimina</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderItemsList(all) {
+  const el = document.getElementById('items-list');
+  if (!el) return;
+  const filter = window._itemRarityFilter || 'all';
+  const filtered = filter === 'all' ? all : all.filter(i => i.rarity === filter);
+  const sorted = applyDragOrder(filtered, 'items');
+  const existingIds = Array.from(el.querySelectorAll('.card[data-id]')).map(c => c.dataset.id);
+  const newIds = sorted.map(d => d.id);
+  const sameIds = existingIds.length === newIds.length && existingIds.every((id,i) => id === newIds[i]);
+  if (!sameIds) {
+    el.innerHTML = sorted.length
+      ? sorted.map(item => itemCardHtml(item)).join('')
+      : '<div class="empty-state"><div class="empty-icon">💎</div><p>Nessun oggetto.</p></div>';
+    initDragDrop(el, 'items');
+  } else {
+    sorted.forEach(item => {
+      const card = el.querySelector('.card[data-id="' + item.id + '"]');
+      if (card) { const tmp = document.createElement('div'); tmp.innerHTML = itemCardHtml(item); if (card.outerHTML !== tmp.firstElementChild?.outerHTML) card.replaceWith(tmp.firstElementChild); }
+    });
+  }
+}
+
 function renderItems(docs, source) {
   mergeAndRender('items', docs, source, all => {
-    const el = document.getElementById('items-list');
-    if (!el) return;
-    el.innerHTML = all.length ? all.map(item => {
-      item._collection = 'items';
-      const vis = item._source === 'shared' ? 'shared' : 'private';
-      const itemJson = JSON.stringify(item).replace(/'/g,"&#39;");
-      const isMine = item.uid === currentUser?.uid;
-      return `
-        <div class="card">
-          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
-            <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
-            ${item.isUnique ? '<div class="card-tag danger-tag">⚠ Unico</div>' : ''}
-            <div class="card-tag event">${esc(item.rarity||'')}</div>
-          </div>
-          <div class="card-title">${esc(item.name || '—')}</div>
-          <div class="card-body">${esc(stripHtml(item.desc||'').substring(0,180))}${stripHtml(item.desc||'').length>180?'<span style="color:var(--text-muted);">… <em>clicca Leggi</em></span>':''}</div>
-          <div class="card-meta">
-            ${item.owner ? `<span>👤 Trovato da: ${esc(item.owner)}</span>` : ''}
-            <span>✍ ${esc(item.createdBy || '')}</span>
-          </div>
-          <div class="card-actions">
-            <button class="btn btn-secondary btn-sm" onclick='openReadModal(${itemJson})'>📖 Leggi</button>
-            ${isMine ? `<button class="btn btn-secondary btn-sm" onclick='openEditModal(${itemJson})'>✏️ Modifica</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteRecord('items','${item.id}','${item._source}')">🗑 Elimina</button>` : ''}
-          </div>
-        </div>`;
-    }).join('') : '<div class="empty-state"><div class="empty-icon">💎</div><p>Nessun oggetto.</p></div>';
+    all.forEach(i => { i._collection = 'items'; });
+    _allItems = all;
+    renderItemsList(all);
     document.getElementById('stat-items').textContent = all.length;
   });
 }
@@ -2593,14 +2655,16 @@ function renderPlayers(docs, source) {
   mergeAndRender('players', docs, source, all => {
     const el = document.getElementById('players-list');
     if (!el) return;
-    el.innerHTML = all.length ? all.map(p => {
+    const sorted = applyDragOrder(all, 'players');
+    const makeCard = p => {
       p._collection = 'players';
       const vis = p._source || 'private';
       const isMine = p.uid === currentUser?.uid;
       const pJson = JSON.stringify(p).replace(/'/g,"&#39;");
       return `
-        <div class="card">
-          <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;">
+        <div class="card" draggable="true" data-id="${p.id}">
+          <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;align-items:center;">
+            <span class="drag-handle" title="Trascina per riordinare">⠿</span>
             <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
           </div>
           <div class="card-title">👤 ${esc(p.charName||'—')} <span class="text-muted" style="font-size:0.8rem;">(${esc(p.realName||'')})</span></div>
@@ -2612,7 +2676,20 @@ function renderPlayers(docs, source) {
             <button class="btn btn-danger btn-sm" onclick="deleteRecord('players','${p.id}','${p._source}')">🗑 Elimina</button>` : ''}
           </div>
         </div>`;
-    }).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Nessun giocatore.</p></div>';
+    };
+    const existingIds = Array.from(el.querySelectorAll('.card[data-id]')).map(c => c.dataset.id);
+    const newIds = sorted.map(d => d.id);
+    const sameIds = existingIds.length === newIds.length && existingIds.every((id,i) => id === newIds[i]);
+    if (!sameIds) {
+      el.innerHTML = sorted.length ? sorted.map(makeCard).join('')
+        : '<div class="empty-state"><div class="empty-icon">👥</div><p>Nessun giocatore.</p></div>';
+      initDragDrop(el, 'players');
+    } else {
+      sorted.forEach(p => {
+        const card = el.querySelector('.card[data-id="' + p.id + '"]');
+        if (card) { const tmp = document.createElement('div'); tmp.innerHTML = makeCard(p); if (card.outerHTML !== tmp.firstElementChild?.outerHTML) card.replaceWith(tmp.firstElementChild); }
+      });
+    }
   });
 }
 function renderMusic(docs, source) {
@@ -2630,12 +2707,12 @@ function renderMusic(docs, source) {
         <div class="track-item draggable-item" draggable="true" data-id="${t.id}">
           <span class="drag-handle" title="Trascina per riordinare">⠿</span>
           <span class="track-icon" style="cursor:pointer;" onclick="openUrl('${esc(t.url)}')">🎵</span>
-          <span class="track-name" style="cursor:pointer;" onclick="openUrl('${esc(t.url)}')">${esc(t.title||'—')}</span>
+          <span class="track-name" style="cursor:pointer;flex:1;" onclick="openUrl('${esc(t.url)}')">${esc(t.title||'—')}</span>
           <span class="track-duration">${esc(t.duration||'')}</span>
           <span class="card-tag ${t._source === 'shared' ? 'shared' : 'private'}" style="margin:0;">${t._source === 'shared' ? '🌐' : '🔒'}</span>
           ${t.uid === currentUser?.uid ? `
-            <button class="btn btn-secondary btn-sm btn-icon" title="Modifica" onclick="openEditModal(${tJson})">✏️</button>
-            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRecord('music','${t.id}','${t._source}')">🗑</button>
+            <button class="btn btn-secondary btn-sm btn-icon" title="Modifica" onclick="(function(e){e.stopPropagation();openEditModal(${tJson});})(event)">✏️</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="(function(e){e.stopPropagation();deleteRecord('music','${t.id}','${t._source}');})(event)">🗑</button>
           ` : ''}
         </div>`;
       }).join('') : '<div class="empty-state"><div class="empty-icon">🎵</div><p>Nessuna traccia.</p></div>';
@@ -3370,6 +3447,7 @@ window.applyFontSize = window.applyFontSize;
 window.applyLineHeight = window.applyLineHeight;
 window.setSidebarWidth = window.setSidebarWidth;
 window.resetAccessibility = window.resetAccessibility;
+window.filterItems = window.filterItems;
 </script>
 </body>
 </html>
