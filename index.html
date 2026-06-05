@@ -972,6 +972,27 @@ body {
 .toast.error   { border-left: 3px solid var(--danger); }
 .toast.info    { border-left: 3px solid var(--info); }
 
+/* ═══ DRAG & DROP ════════════════════════════════════════════════════════════ */
+.card[draggable="true"] { cursor: grab; }
+.card[draggable="true"]:active { cursor: grabbing; }
+.card.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  transform: scale(1.01);
+}
+.card.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+.drag-handle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: grab;
+  padding: 0 4px;
+  user-select: none;
+}
+.drag-handle:hover { color: var(--accent); }
+
 /* ═══ UTILITY ════════════════════════════════════════════════════════════════ */
 .sep { height: 1px; background: var(--border); margin: 1rem 0; }
 .text-muted { color: var(--text-muted); font-size: 0.82rem; }
@@ -2478,14 +2499,15 @@ function cardHtml(item, fields, titleField='title', bodyField='desc') {
   const preview = stripHtml(rawPreview);
   const itemJson = JSON.stringify(item).replace(/'/g, '&#39;');
   return `
-    <div class="card">
-      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+    <div class="card" draggable="true" data-id="${item.id}">
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;align-items:center;">
+        <span class="drag-handle" title="Trascina per riordinare">⠿</span>
         <div class="card-tag ${vis}">${vis === 'shared' ? '🌐 Condivisa' : '🔒 Privata'}</div>
         ${item.type ? `<div class="card-tag public">${esc(item.type)}</div>` : ''}
         ${item.category ? `<div class="card-tag event">${esc(item.category)}</div>` : ''}
       </div>
       <div class="card-title">${esc(item[titleField] || item.name || '—')}</div>
-      <div class="card-body" style="white-space:pre-wrap;">${esc(preview.substring(0,180))}${preview.length > 180 ? '<span style="color:var(--text-muted);">… <em>clicca Leggi per tutto</em></span>' : ''}</div>
+      <div class="card-body">${esc(preview.substring(0,180))}${preview.length > 180 ? '<span style="color:var(--text-muted);">… <em>clicca Leggi</em></span>' : ''}</div>
       <div class="card-meta">
         <span>✍ ${esc(item.createdBy || '—')}</span>
         ${fields.map(f => item[f] ? `<span>${esc(item[f])}</span>` : '').join('')}
@@ -2501,11 +2523,12 @@ function cardHtml(item, fields, titleField='title', bodyField='desc') {
 function renderGeneric(docs, containerId, extraFields=[], titleField='title', bodyField='desc', collName='') {
   const el = document.getElementById(containerId);
   if (!el) return;
-  // _collection deve essere nel dato PRIMA di JSON.stringify in cardHtml
   const withColl = docs.map(d => Object.assign({}, d, {_collection: collName}));
-  el.innerHTML = withColl.length
-    ? withColl.map(d => cardHtml(d, extraFields, titleField, bodyField)).join('')
+  const sorted = applyDragOrder(withColl, collName);
+  el.innerHTML = sorted.length
+    ? sorted.map(d => cardHtml(d, extraFields, titleField, bodyField)).join('')
     : '<div class="empty-state"><div class="empty-icon">📭</div><p>Nessun elemento. Aggiungine uno!</p></div>';
+  if (collName) initDragDrop(el, collName);
 }
 
 function renderSessions(docs, source) {
@@ -2715,6 +2738,77 @@ function updateStats() {
 }
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────
+// ─── DRAG & DROP ───────────────────────────────────────────────────────
+function getDragOrder(collName) {
+  try { return JSON.parse(localStorage.getItem('order-' + collName) || '[]'); } catch(e) { return []; }
+}
+function saveDragOrder(collName, ids) {
+  localStorage.setItem('order-' + collName, JSON.stringify(ids));
+}
+function applyDragOrder(docs, collName) {
+  const order = getDragOrder(collName);
+  if (!order.length) return docs;
+  const map = new Map(docs.map(d => [d.id, d]));
+  const sorted = order.map(id => map.get(id)).filter(Boolean);
+  docs.forEach(d => { if (!order.includes(d.id)) sorted.unshift(d); });
+  return sorted;
+}
+
+let _dragSrcEl = null;
+let _dragCollName = null;
+
+function initDragDrop(container, collName) {
+  if (container._dragInited) return;
+  container._dragInited = true;
+  container.addEventListener('dragstart', e => {
+    const card = e.target.closest('.card[draggable]');
+    if (!card) return;
+    _dragSrcEl = card;
+    _dragCollName = collName;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  container.addEventListener('dragend', () => {
+    container.querySelectorAll('.card').forEach(c => c.classList.remove('dragging','drag-over'));
+    _dragSrcEl = null;
+  });
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    const card = e.target.closest('.card[draggable]');
+    if (!card || card === _dragSrcEl) return;
+    container.querySelectorAll('.card').forEach(c => c.classList.remove('drag-over'));
+    card.classList.add('drag-over');
+    e.dataTransfer.dropEffect = 'move';
+  });
+  container.addEventListener('dragleave', e => {
+    const card = e.target.closest('.card[draggable]');
+    if (card) card.classList.remove('drag-over');
+  });
+  container.addEventListener('drop', e => {
+    e.preventDefault();
+    const targetCard = e.target.closest('.card[draggable]');
+    if (!targetCard || targetCard === _dragSrcEl || _dragCollName !== collName) return;
+    targetCard.classList.remove('drag-over');
+    const cards = Array.from(container.querySelectorAll('.card[draggable]'));
+    const srcIdx = cards.indexOf(_dragSrcEl);
+    const tgtIdx = cards.indexOf(targetCard);
+    if (srcIdx < tgtIdx) targetCard.after(_dragSrcEl);
+    else targetCard.before(_dragSrcEl);
+    const newOrder = Array.from(container.querySelectorAll('.card[draggable]')).map(c => c.dataset.id);
+    saveDragOrder(collName, newOrder);
+    toast('Ordine salvato', 'success');
+  });
+}
+
+function initAllDragDrop() {
+  [['plots-list','plots'],['lore-list','lore'],['npcs-list','npcs'],
+   ['items-list','items'],['races-list','races'],['rules-list','rules'],
+   ['players-list','players']].forEach(([elId, coll]) => {
+    const el = document.getElementById(elId);
+    if (el) initDragDrop(el, coll);
+  });
+}
+
 window.navigate = (page, el) => {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2740,8 +2834,10 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 
 window.pickVis = (btn, hiddenId) => {
   const parent = btn.closest('.visibility-switch');
-  parent.querySelectorAll('.vis-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  parent.querySelectorAll('.vis-btn').forEach(b => {
+    b.classList.remove('active', 'private', 'shared');
+  });
+  btn.classList.add('active', btn.dataset.vis);
   document.getElementById(hiddenId).value = btn.dataset.vis;
 };
 
